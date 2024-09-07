@@ -521,6 +521,8 @@ export default defineComponent({
 
 .mapboxgl-ctrl-directions .mapbox-directions-profile {
     display: flex !important;
+    flex-direction: column;
+    align-items: center;
     pointer-events: auto;
     background-color: #ebf8ff;
     color: #3182ce;
