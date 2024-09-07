@@ -20,11 +20,13 @@ const loading = ref(false);
 
 const props = defineProps({
   modelValue: Boolean,
-  content: String
+  content: String,
+  title: String
 });
 
 const showDialog = ref(false);
 const dialogContent = ref('');
+const dialogTitle = ref('');
 const chatMsgValue = ref('');
 
 const store = useFormStore();
@@ -186,7 +188,7 @@ const capturePhoto = () => {
 };
 
 // 確認上傳照片
-const confirmPhoto = () => {
+const confirmPhoto = async () => {
   const blob = dataURLToBlob(photo.value);
 
   // 創建 FormData 並附加圖片文件
@@ -195,21 +197,34 @@ const confirmPhoto = () => {
   isPhotoPreview.value = false; // 關閉照片預覽
   loading.value = !loading.value; // 顯示加載中
 
-  fetch('https://lapras-backend-752705272074.asia-east1.run.app/api/chat/photo/upload', {
-    method: 'POST',
-    body: formData
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      // searchResult.value = data;
-      showDialog.value = true;
-      dialogContent.value = data.choices[0].message.content;
-      loading.value = !loading.value; // 顯示加載中
-    })
-    .catch((error) => {
-      console.error('上傳失敗:', error);
-      loading.value = !loading.value; // 顯示加載中
-    });
+  try {
+    const [response1, response2] = await Promise.all([
+      fetch('https://lapras-backend-752705272074.asia-east1.run.app/api/chat/photo/upload', {
+        method: 'POST',
+        body: formData
+      }),
+      fetch('https://lapras-backend-752705272074.asia-east1.run.app/api/chat/photo/upload/thing', {
+        method: 'POST',
+        body: formData
+      })
+    ]);
+
+    // 處理第一個回應
+    const data1 = await response1.json();
+    // 處理第二個回應
+    const data2 = await response2.json();
+
+    // 假設 API 回應格式包含 choices 並能取得內容，這裡使用第一個回應的資料
+    showDialog.value = true;
+    dialogContent.value = data1.choices[0].message.content;
+
+    // 如果需要處理第二個 API 回應的資料，可以在這裡進行
+    dialogTitle.value = data2.choices[0].message.content;
+  } catch (error) {
+    console.error('上傳失敗:', error);
+  } finally {
+    loading.value = !loading.value; // 隱藏加載中
+  }
 };
 
 // 重新拍攝照片
@@ -284,21 +299,58 @@ const activeRecord = computed(() =>
 
 <template>
   <template v-if="loading">
-    <div class="load">
-      <div class="loading-cat">
-        <div class="body"></div>
-        <div class="head">
-          <div class="face"></div>
-        </div>
-        <div class="foot">
-          <div class="tummy-end"></div>
-          <div class="bottom"></div>
-          <div class="legs left"></div>
-          <div class="legs right"></div>
-        </div>
-        <div class="hands left"></div>
-        <div class="hands right"></div>
-      </div>
+    <div style="background-color: #edf8fa; height: 100vh">
+      <svg id="loader" viewBox="0 0 140 60" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <mask id="mask0" maskUnits="userSpaceOnUse">
+            <rect class="line0" x="1" y="1" width="102" height="8" rx="4" ry="4" />
+            <rect class="line1" x="15" y="11" width="70" height="8" rx="4" ry="4" />
+            <rect class="line2" x="29" y="21" width="100" height="8" rx="4" ry="4" />
+            <rect class="line3" x="29" y="31" width="66" height="8" rx="4" ry="4" />
+            <rect class="line4" x="15" y="41" width="13" height="8" rx="4" ry="4" />
+            <rect class="line5" x="1" y="51" width="13" height="8" rx="4" ry="4" />
+          </mask>
+          <mask id="mask1" maskUnits="userSpaceOnUse">
+            <rect class="line0" x="1" y="1" width="102" height="8" rx="4" ry="4" />
+            <rect class="line1" x="15" y="11" width="70" height="8" rx="4" ry="4" />
+            <rect class="line2" x="29" y="21" width="100" height="8" rx="4" ry="4" />
+            <rect class="line3" x="29" y="31" width="66" height="8" rx="4" ry="4" />
+            <rect class="line4" x="15" y="41" width="13" height="8" rx="4" ry="4" />
+            <rect class="line5" x="1" y="51" width="13" height="8" rx="4" ry="4" />
+          </mask>
+
+          <g id="group">
+            <g class="line line0">
+              <rect x="1" y="1" width="13" height="8" rx="4" ry="4" class="div" />
+              <rect x="16" y="1" width="23" height="8" rx="4" ry="4" class="class-name" />
+              <rect x="41" y="1" width="37" height="8" rx="4" ry="4" class="class" />
+              <rect x="80" y="1" width="23" height="8" rx="4" ry="4" class="class" />
+            </g>
+            <g class="line line1">
+              <rect x="15" y="11" width="13" height="8" rx="4" ry="4" class="div" />
+              <rect x="30" y="11" width="23" height="8" rx="4" ry="4" class="class-name" />
+              <rect x="55" y="11" width="30" height="8" rx="4" ry="4" class="class" />
+            </g>
+            <g class="line line2">
+              <rect x="29" y="21" width="100" height="8" rx="4" ry="4" class="par" />
+            </g>
+            <g class="line line3">
+              <rect x="29" y="31" width="66" height="8" rx="4" ry="4" class="par" />
+            </g>
+            <g class="line line4">
+              <rect x="15" y="41" width="13" height="8" rx="4" ry="4" class="div" />
+            </g>
+            <g class="line line5">
+              <rect x="1" y="51" width="13" height="8" rx="4" ry="4" class="div" />
+            </g>
+          </g>
+        </defs>
+
+        <g id="groups">
+          <use xlink:href="#group" class="group group0" />
+          <use xlink:href="#group" class="group group1" />
+        </g>
+      </svg>
     </div>
   </template>
   <template v-if="!loading">
@@ -367,15 +419,48 @@ const activeRecord = computed(() =>
                 class="rounded-t-lg"
               />
               <div class="rounded-b-lg flex bg-black justify-center" style="width: 400px">
-                <button @click="confirmPhoto" class="text-white rounded-full p-2 m-1">
+                <button @click="confirmPhoto" class="text-white rounded-full p-4 m-1">
                   <i class="fa-solid fa-check text-2xl select-none"></i>
                 </button>
-                <button @click="retakePhoto" class="text-white rounded-full p-2 m-1">
+                <button @click="retakePhoto" class="text-white rounded-full p-4 m-1">
                   <i class="fa-solid fa-xmark text-2xl select-none"></i>
                 </button>
               </div>
             </div>
-            <DialogModalVue v-model="showDialog" :content="dialogContent"></DialogModalVue>
+            <DialogModalVue
+              v-model="showDialog"
+              :content="dialogContent"
+              :title="dialogTitle"
+            ></DialogModalVue>
+            <div
+              v-if="!isCamera && !isPhotoPreview"
+              class="camera flex flex-col items-center justify-center mx-4"
+            >
+              <hr class="w-full" />
+              <h1 class="my-5 text-2xl font-black">垃圾分類介紹</h1>
+              <div class="flex justify-evenly flex-wrap w-full">
+                <div
+                  class="w-5/12 my-4 rounded-lg h-20 flex items-center justify-center cursor-pointer bg-re-div"
+                >
+                  立體類
+                </div>
+                <div
+                  class="w-5/12 my-4 rounded-lg h-20 flex items-center justify-center cursor-pointer bg-re-div"
+                >
+                  平面類
+                </div>
+                <div
+                  class="w-5/12 my-4 rounded-lg h-20 flex items-center justify-center cursor-pointer bg-re-div"
+                >
+                  其他類
+                </div>
+                <div
+                  class="w-5/12 my-4 rounded-lg h-20 flex items-center justify-center cursor-pointer bg-re-div"
+                >
+                  一般垃圾
+                </div>
+              </div>
+            </div>
           </div>
         </template>
         <template #tab1>
@@ -417,299 +502,103 @@ const activeRecord = computed(() =>
 }
 </style>
 
+<style lang="stylus">
+/* colors of monokai: http://www.colourlovers.com/palette/1718713/Monokai */
+grey = #272822 // sundried clay
+orchid = #356C77 // pink
+blue = #356C77 // bounded rationality
+green = #93D4DF // henn1nk
+orange = #356C77 // pumpkin spice
+
+classColour = #FFE792
+parColour = #272822
+
+// How long a single loop (two blocks scrolling past) takes
+animation_length = 2s
+
+group_delay = animation_length / 2
+line_delay = animation_length / 20
+scroll_shift = 0 - animation_length / 8
+
+
+:root
+body
+  height: 100%
+  width: 100%
+  overflow: hidden
+
+body
+  background-color: white
+
+svg#loader
+  height: 100%
+  width: 100%
+
+  mask
+    > rect
+      fill: white
+      transform: translateX(-100%)
+      animation: animation_length ease-in expand infinite
+
+    for group_num in (0..1)
+      &#mask{group_num}
+        for line_num in (0..5)
+          > rect.line{line_num}
+            animation-delay: (line_num * line_delay + group_num * group_delay)
+
+  #group
+    > g.line
+      > rect
+        &.div
+          fill: orchid
+        &.class-name
+          fill: green
+        &.class
+          fill: classColour
+        &.par
+          fill: parColour
+
+  use.group
+    animation: animation_length linear scroll infinite
+
+    for group_num in (0..2)
+      &.group{group_num}
+        mask: url('#mask' + group_num)
+        transform: translateY(group_num * 100%)
+        animation-delay: (group_num * group_delay + scroll_shift)
+
+@keyframes expand
+  0%
+  70.001%
+    transform: scaleX(0) translateX(-10px)
+  20%
+  70%
+    transform: scaleX(1) translateX(0)
+
+@keyframes scroll
+  0%
+    transform: translateY(100%)
+  100%
+    transform: translateY(-100%)
+</style>
+
 <style>
+.bg-re-div {
+  border: 3px solid #468d9b;
+  font-size: 16px;
+  font-weight: bold;
+  color: #468d9b;
+}
+
+.bg-re-div:hover {
+  background-color: #F8E3BC;
+}
+
 .bg-div {
   background-color: #5ab4c5;
 }
 
 .bg-div:hover {
   background-color: #468d9b;
-}
-
-:global(body) {
-  margin: 0;
-  height: 100%;
-}
-
-.load {
-  padding: 180px 40px 0 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.loading-cat {
-  position: relative;
-  display: inline-block;
-  width: 480px;
-  height: 360px;
-  animation: 2.74s linear infinite loading-cat;
-}
-.loading-cat .head,
-.loading-cat .foot,
-.loading-cat .body {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  margin: auto;
-  border-radius: 50%;
-  width: 240px;
-  height: 240px;
-}
-.loading-cat .body {
-  background-image: radial-gradient(
-    transparent 0%,
-    transparent 35%,
-    #383c4b 35%,
-    #383c4b 39%,
-    #bca1d5 39%,
-    #bca1d5 46%,
-    #efe0fd 46%,
-    #efe0fd 60%,
-    #bca1d5 60%,
-    #bca1d5 67%,
-    #383c4b 67%,
-    #383c4b 100%
-  );
-}
-.loading-cat .head:before,
-.loading-cat .foot:before {
-  background-image: radial-gradient(
-    transparent 0%,
-    transparent 35%,
-    #383c4b 35%,
-    #383c4b 39%,
-    #bca1d5 39%,
-    #bca1d5 67%,
-    #383c4b 67%,
-    #383c4b 100%
-  );
-}
-.loading-cat .head:before {
-  content: '';
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  border-radius: 50%;
-  clip-path: polygon(100% 20%, 50% 50%, 70% -10%);
-  -webkit-clip-path: polygon(100% 20%, 50% 50%, 70% -10%);
-}
-.loading-cat .head:after {
-  content: '';
-  width: 66px;
-  height: 40px;
-  position: absolute;
-  top: 13px;
-  right: 63px;
-  background-image: linear-gradient(white 65%, transparent 65%),
-    radial-gradient(white 51%, #383c4b 55%, #383c4b 68%, transparent 70%);
-  transform: rotate(-66deg);
-}
-.loading-cat .head .face {
-  width: 80px;
-  height: 60px;
-  left: 145px;
-  top: 29px;
-  position: absolute;
-  transform: rotate(-47deg);
-  background:
-    radial-gradient(circle, #efe0fd 0%, #efe0fd 23%, transparent 23%) -3px 17px no-repeat,
-    radial-gradient(circle, #383c4b 0%, #383c4b 6%, transparent 6%) 12px -12px no-repeat,
-    radial-gradient(circle, #383c4b 0%, #383c4b 6%, transparent 6%) -12px -12px no-repeat,
-    radial-gradient(#bca1d5 0%, #bca1d5 15%, transparent 15%) 0 -11px no-repeat,
-    radial-gradient(circle, transparent 5%, #383c4b 5%, #383c4b 10%, transparent 10%) -3px -5px
-      no-repeat,
-    radial-gradient(circle, transparent 5%, #383c4b 5%, #383c4b 10%, transparent 10%) 3px -5px no-repeat,
-    radial-gradient(circle, #bca1d5 45%, transparent 45%) 0 -3px,
-    linear-gradient(
-      transparent 35%,
-      #383c4b 35%,
-      #383c4b 41%,
-      transparent 41%,
-      transparent 44%,
-      #383c4b 44%,
-      #383c4b 50%,
-      transparent 50%,
-      transparent 53%,
-      #383c4b 53%,
-      #383c4b 59%,
-      transparent 59%
-    );
-}
-.loading-cat .foot:before,
-.loading-cat .foot:after {
-  content: '';
-  width: 100%;
-  height: 100%;
-  position: absolute;
-}
-.loading-cat .foot:before {
-  border-radius: 50%;
-  clip-path: polygon(50% 50%, 0% 50%, 0% 25%);
-  -webkit-clip-path: polygon(50% 50%, 0% 50%, 0% 25%);
-}
-.loading-cat .foot .tummy-end {
-  width: 24px;
-  height: 24px;
-  position: absolute;
-  border-radius: 50%;
-  background-color: #efe0fd;
-  left: 19px;
-  top: 105px;
-}
-.loading-cat .foot .bottom {
-  width: 35px;
-  height: 15px;
-  position: absolute;
-  top: 78px;
-  left: 12px;
-  border: 6px solid #383c4b;
-  border-bottom: 0;
-  border-radius: 50%;
-  transform: rotate(21deg);
-  background: #bca1d5;
-}
-.loading-cat .hands,
-.loading-cat .legs,
-.loading-cat .foot:after {
-  width: 10px;
-  height: 25px;
-  position: absolute;
-  border: 6px solid #383c4b;
-  background-color: #bca1d5;
-}
-.loading-cat .hands {
-  border-top: 0;
-  border-radius: 0 0 12px 12px;
-}
-.loading-cat .hands.left {
-  top: 144px;
-  right: 163px;
-  transform: rotate(-20deg);
-}
-.loading-cat .hands.right {
-  top: 123px;
-  right: 128px;
-  transform: rotate(-25deg);
-}
-.loading-cat .legs {
-  border-bottom: 0;
-  border-radius: 12px 12px 0 0;
-}
-.loading-cat .legs.left {
-  top: 65px;
-  left: 50px;
-  transform: rotate(25deg);
-}
-.loading-cat .legs.right {
-  top: 53px;
-  left: 12px;
-  transform: rotate(22deg);
-}
-.loading-cat .foot:after {
-  width: 8px;
-  height: 40px;
-  top: 42px;
-  left: 36px;
-  z-index: -1;
-  transform: rotate(25deg);
-  background-color: #efe0fd;
-  border-bottom: 0;
-  border-radius: 12px 12px 0 0;
-}
-@keyframes body {
-  0% {
-    clip-path: polygon(50% 50%, 0% 50%, 0% 100%, 100% 100%, 100% 20%);
-    -webkit-clip-path: polygon(50% 50%, 0% 50%, 0% 100%, 100% 100%, 100% 20%);
-  }
-  10% {
-    clip-path: polygon(50% 50%, 30% 120%, 50% 100%, 100% 100%, 100% 20%);
-    -webkit-clip-path: polygon(50% 50%, 30% 120%, 50% 100%, 100% 100%, 100% 20%);
-  }
-  20% {
-    clip-path: polygon(50% 50%, 100% 90%, 120% 90%, 100% 100%, 100% 20%);
-    -webkit-clip-path: polygon(50% 50%, 100% 90%, 120% 90%, 100% 100%, 100% 20%);
-  }
-  40% {
-    clip-path: polygon(50% 50%, 100% 45%, 120% 45%, 120% 50%, 100% 20%);
-    -webkit-clip-path: polygon(50% 50%, 100% 45%, 120% 45%, 120% 50%, 100% 20%);
-  }
-  50% {
-    clip-path: polygon(50% 50%, 100% 45%, 120% 45%, 120% 50%, 100% 20%);
-    -webkit-clip-path: polygon(50% 50%, 100% 45%, 120% 45%, 120% 50%, 100% 20%);
-  }
-  65% {
-    clip-path: polygon(50% 50%, 100% 65%, 120% 65%, 120% 50%, 100% 20%);
-    -webkit-clip-path: polygon(50% 50%, 100% 65%, 120% 65%, 120% 50%, 100% 20%);
-  }
-  80% {
-    clip-path: polygon(50% 50%, 75% 130%, 120% 65%, 120% 50%, 100% 20%);
-    -webkit-clip-path: polygon(50% 50%, 75% 130%, 120% 65%, 120% 50%, 100% 20%);
-  }
-  90% {
-    clip-path: polygon(50% 50%, -20% 110%, 50% 120%, 100% 100%, 100% 20%);
-    -webkit-clip-path: polygon(50% 50%, -20% 110%, 50% 120%, 100% 100%, 100% 20%);
-  }
-  100% {
-    clip-path: polygon(50% 50%, 0% 50%, 0% 100%, 100% 100%, 100% 20%);
-    -webkit-clip-path: polygon(50% 50%, 0% 50%, 0% 100%, 100% 100%, 100% 20%);
-  }
-}
-@keyframes loading-cat {
-  0% {
-    transform: rotate(0deg);
-  }
-  10% {
-    transform: rotate(-80deg);
-  }
-  20% {
-    transform: rotate(-180deg);
-  }
-  40% {
-    transform: rotate(-245deg);
-  }
-  50% {
-    transform: rotate(-250deg);
-  }
-  68% {
-    transform: rotate(-300deg);
-  }
-  90% {
-    transform: rotate(-560deg);
-  }
-  100% {
-    transform: rotate(-720deg);
-  }
-}
-@keyframes foot {
-  0% {
-    transform: rotate(-10deg);
-  }
-  10% {
-    transform: rotate(-100deg);
-  }
-  20% {
-    transform: rotate(-145deg);
-  }
-  35% {
-    transform: rotate(-190deg);
-  }
-  50% {
-    transform: rotate(-195deg);
-  }
-  70% {
-    transform: rotate(-165deg);
-  }
-  100% {
-    transform: rotate(-10deg);
-  }
-}
-.loading-cat .body {
-  animation: 2.74s linear infinite body;
-}
-.loading-cat .foot {
-  animation: 2.74s linear infinite foot;
 }
 </style>
