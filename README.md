@@ -31,4 +31,4 @@ pnpm build
 ```sh
 pnpm lint
 ```
-![image](![f03985b3592de4c132f47ea359f8e700f86f1a3b](https://github.com/user-attachments/assets/d0eb0228-4818-4087-b90d-9917dc168cf5)
+![f03985b3592de4c132f47ea359f8e700f86f1a3b](https://github.com/user-attachments/assets/d0eb0228-4818-4087-b90d-9917dc168cf5)
