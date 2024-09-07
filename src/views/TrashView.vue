@@ -21,13 +21,15 @@ const loading = ref(false);
 const props = defineProps({
   modelValue: Boolean,
   content: String,
-  title: String
+  title: String,
+  type: String
 });
 
 const showDialog = ref(false);
 const dialogContent = ref('');
 const dialogTitle = ref('');
 const chatMsgValue = ref('');
+const catlogType = ref('');
 
 const store = useFormStore();
 
@@ -93,6 +95,11 @@ const searchResultAgencyTypeSet = computed(
 );
 const searchResultTitle = computed(() => searchResult.value?.map((item) => item.title));
 
+const onClick = (type: string) => {
+  showDialog.value = !showDialog.value;
+  catlogType.value = type;
+};
+
 const onSearchClick = () => {
   loading.value = !loading.value; // 顯示加載中
   fetch('https://lapras-backend-752705272074.asia-east1.run.app/api/chat/text/send', {
@@ -107,6 +114,8 @@ const onSearchClick = () => {
       // searchResult.value = data;
       showDialog.value = !showDialog.value;
       dialogContent.value = data;
+      dialogTitle.value = chatMsgValue.value;
+      catlogType.value = '';
       loading.value = !loading.value; // 顯示加載中
     });
 };
@@ -217,6 +226,7 @@ const confirmPhoto = async () => {
     // 假設 API 回應格式包含 choices 並能取得內容，這裡使用第一個回應的資料
     showDialog.value = true;
     dialogContent.value = data1.choices[0].message.content;
+    catlogType.value = '';
 
     // 如果需要處理第二個 API 回應的資料，可以在這裡進行
     dialogTitle.value = data2.choices[0].message.content;
@@ -257,24 +267,38 @@ const handleFileUpload = (event) => {
 };
 
 // 上傳圖片
-const uploadImage = (formData) => {
+const uploadImage = async (formData) => {
   loading.value = !loading.value; // 顯示加載中
 
-  fetch('https://lapras-backend-752705272074.asia-east1.run.app/api/chat/photo/upload', {
-    method: 'POST',
-    body: formData
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      // searchResult.value = data;
-      showDialog.value = !showDialog.value;
-      dialogContent.value = data.choices[0].message.content;
-      loading.value = !loading.value; // 顯示加載中
-    })
-    .catch((error) => {
-      console.error('上傳失敗:', error);
-      loading.value = !loading.value; // 顯示加載中
-    });
+  try {
+    const [response1, response2] = await Promise.all([
+      fetch('https://lapras-backend-752705272074.asia-east1.run.app/api/chat/photo/upload', {
+        method: 'POST',
+        body: formData
+      }),
+      fetch('https://lapras-backend-752705272074.asia-east1.run.app/api/chat/photo/upload/thing', {
+        method: 'POST',
+        body: formData
+      })
+    ]);
+
+    // 處理第一個回應
+    const data1 = await response1.json();
+    // 處理第二個回應
+    const data2 = await response2.json();
+
+    // 假設 API 回應格式包含 choices 並能取得內容，這裡使用第一個回應的資料
+    showDialog.value = true;
+    dialogContent.value = data1.choices[0].message.content;
+    catlogType.value = '';
+
+    // 如果需要處理第二個 API 回應的資料，可以在這裡進行
+    dialogTitle.value = data2.choices[0].message.content;
+  } catch (error) {
+    console.error('上傳失敗:', error);
+  } finally {
+    loading.value = !loading.value; // 隱藏加載中
+  }
 };
 
 const activeSituation = ref('apply');
@@ -431,6 +455,7 @@ const activeRecord = computed(() =>
               v-model="showDialog"
               :content="dialogContent"
               :title="dialogTitle"
+              :type="catlogType"
             ></DialogModalVue>
             <div
               v-if="!isCamera && !isPhotoPreview"
@@ -441,21 +466,25 @@ const activeRecord = computed(() =>
               <div class="flex justify-evenly flex-wrap w-full">
                 <div
                   class="w-5/12 my-4 rounded-lg h-20 flex items-center justify-center cursor-pointer bg-re-div"
+                  @click="onClick('立體類')"
                 >
                   立體類
                 </div>
                 <div
                   class="w-5/12 my-4 rounded-lg h-20 flex items-center justify-center cursor-pointer bg-re-div"
+                  @click="onClick('平面類')"
                 >
                   平面類
                 </div>
                 <div
                   class="w-5/12 my-4 rounded-lg h-20 flex items-center justify-center cursor-pointer bg-re-div"
+                  @click="onClick('其他類')"
                 >
                   其他類
                 </div>
                 <div
                   class="w-5/12 my-4 rounded-lg h-20 flex items-center justify-center cursor-pointer bg-re-div"
+                  @click="onClick('一般垃圾')"
                 >
                   一般垃圾
                 </div>
@@ -591,7 +620,7 @@ svg#loader
 }
 
 .bg-re-div:hover {
-  background-color: #F8E3BC;
+  background-color: #f8e3bc;
 }
 
 .bg-div {
