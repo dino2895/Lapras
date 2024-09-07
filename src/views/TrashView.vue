@@ -113,7 +113,7 @@ const isCamera = ref(false); // 是否啟動攝像頭
 const isFrontCamera = ref(true); // 記錄當前是否為前置攝像頭
 
 // 啟動攝像頭
-const startCamera = (facingMode = 'user') => {
+const startCamera = (facingMode = 'environment') => {
   isCamera.value = !isCamera.value;
   navigator.mediaDevices
     .getUserMedia({
@@ -146,7 +146,7 @@ const switchCamera = () => {
   stopCamera(); // 先停止當前攝像頭流
 
   // 重新啟動攝像頭，根據 isFrontCamera 選擇前置或後置
-  startCamera(isFrontCamera.value ? 'user' : { exact: 'environment' });
+  startCamera(isFrontCamera.value ? 'user' : 'environment');
 };
 
 function dataURLToBlob(dataURL) {
@@ -189,6 +189,9 @@ const capturePhoto = () => {
       // searchResult.value = data;
       showDialog.value = !showDialog.value;
       dialogContent.value = data.choices[0].message.content;
+    })
+    .catch((error) => {
+      console.error('上傳失敗:', error);
     });
 
   stopCamera();
@@ -198,6 +201,41 @@ const capturePhoto = () => {
 onBeforeUnmount(() => {
   stopCamera();
 });
+
+// 定義 fileInput 的引用
+const fileInput = ref(null);
+
+// 觸發文件選擇
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
+
+// 處理文件上傳
+const handleFileUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const formData = new FormData();
+    formData.append('image', file); // 將文件附加到 FormData
+    uploadImage(formData); // 調用上傳方法
+  }
+};
+
+// 上傳圖片
+const uploadImage = (formData) => {
+  fetch('https://lapras-backend-752705272074.asia-east1.run.app/api/chat/photo/upload', {
+    method: 'POST',
+    body: formData
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      // searchResult.value = data;
+      showDialog.value = !showDialog.value;
+      dialogContent.value = data.choices[0].message.content;
+    })
+    .catch((error) => {
+      console.error('上傳失敗:', error);
+    });
+};
 
 const activeSituation = ref('apply');
 
@@ -234,10 +272,18 @@ const activeRecord = computed(() =>
             <div
               class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center"
               style="background-color: #5ab4c5"
+              @click="triggerFileInput"
             >
               <i class="fa-solid fa-cloud-arrow-up text-8xl text-white py-4"></i>
               <p class="text-white text-center">上傳想要詢問的垃圾~</p>
             </div>
+            <input
+              type="file"
+              ref="fileInput"
+              style="display: none"
+              @change="handleFileUpload"
+              accept="image/*"
+            />
             <div
               class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center"
               style="background-color: #5ab4c5"
