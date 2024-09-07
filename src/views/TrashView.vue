@@ -149,6 +149,21 @@ const switchCamera = () => {
   startCamera(isFrontCamera.value ? 'user' : { exact: 'environment' });
 };
 
+function dataURLToBlob(dataURL) {
+  // 把 base64 的 dataURL 轉換成二進制格式的 Blob
+  const byteString = atob(dataURL.split(',')[1]);
+  const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+
+  return new Blob([ab], { type: mimeString });
+}
+
 // 拍照功能
 const capturePhoto = () => {
   const canvas = document.createElement('canvas');
@@ -158,16 +173,22 @@ const capturePhoto = () => {
   ctx.drawImage(video.value, 0, 0, canvas.width, canvas.height);
 
   // 將照片轉換為 base64 編碼
-  photo.value = canvas.toDataURL('image/png');
+  const dataURL = canvas.toDataURL('image/png'); // 生成 dataURL
+  const blob = dataURLToBlob(dataURL);
+
+  // 創建 FormData 並附加圖片文件
+  const formData = new FormData();
+  formData.append('image', blob, 'image.png');
 
   fetch('https://lapras-backend-752705272074.asia-east1.run.app/api/chat/photo/upload', {
-    method: 'POST'
+    method: 'POST',
+    body: formData
   })
     .then((res) => res.json())
     .then((data) => {
       // searchResult.value = data;
       showDialog.value = !showDialog.value;
-      dialogContent.value = data;
+      dialogContent.value = data.choices[0].message.content;
     });
 
   stopCamera();
@@ -209,13 +230,13 @@ const activeRecord = computed(() =>
               <img src="@/assets/images/search-icon.svg" alt="搜尋" />
             </button>
           </section>
-          <div class="flex justify-center">
+          <div v-if="!isCamera" class="flex justify-center">
             <div
               class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center"
               style="background-color: #5ab4c5"
             >
               <i class="fa-solid fa-cloud-arrow-up text-8xl text-white py-4"></i>
-              <p class="text-white text-center">想要詢問的垃圾分類圖片?</p>
+              <p class="text-white text-center">上傳想要詢問的垃圾~</p>
             </div>
             <div
               class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center"
