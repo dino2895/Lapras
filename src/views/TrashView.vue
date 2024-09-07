@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import { useFormStore } from '@/stores/form';
 import { useUserStore } from '@/stores/user';
@@ -13,6 +13,7 @@ import serviceListJson from '../../public/mock/service_list.json';
 import caseProgressJson from '../../public/mock/case_progress.json';
 import type { User } from '@/stores/user';
 import DialogModalVue from '../components/DialogModal.vue';
+import { start } from 'repl';
 
 const props = defineProps({
   modelValue: Boolean,
@@ -91,7 +92,7 @@ const onSearchClick = () => {
   fetch('https://lapras-backend-752705272074.asia-east1.run.app/api/chat/text/send', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({ msg: chatMsgValue.value })
   })
@@ -102,6 +103,50 @@ const onSearchClick = () => {
       dialogContent.value = data;
     });
 };
+
+// 定義響應式數據
+const photo = ref(null); // 存儲照片的 Base64
+const stream = ref(null); // 存儲攝像頭的流
+const video = ref(null); // 引用 video 元素
+
+// 啟動攝像頭
+const startCamera = () => {
+  navigator.mediaDevices
+    .getUserMedia({ video: true })
+    .then((mediaStream) => {
+      stream.value = mediaStream;
+      video.value.srcObject = mediaStream;
+    })
+    .catch((err) => {
+      console.error('攝像頭啟動失敗:', err);
+    });
+};
+
+// 拍照功能
+const capturePhoto = () => {
+  const canvas = document.createElement('canvas');
+  canvas.width = video.value.videoWidth;
+  canvas.height = video.value.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video.value, 0, 0, canvas.width, canvas.height);
+
+  // 將照片轉換為 base64 編碼
+  photo.value = canvas.toDataURL('image/png');
+};
+
+// 在組件掛載時啟動攝像頭
+onMounted(() => {
+  startCamera();
+});
+
+// 在組件卸載前停止攝像頭流
+onBeforeUnmount(() => {
+  if (stream.value) {
+    stream.value.getTracks().forEach((track) => {
+      track.stop();
+    });
+  }
+});
 
 const activeSituation = ref('apply');
 
@@ -145,10 +190,15 @@ const activeRecord = computed(() =>
             <div
               class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center"
               style="background-color: #5ab4c5"
+              @click="capturePhoto"
             >
               <i class="fa-solid fa-camera-retro text-8xl text-white py-4"></i>
-              <p class="text-white text-center">請輸入您想要丟的垃圾</p>
+              <p class="text-white text-center">拍攝想要詢問的垃圾~</p>
             </div>
+          </div>
+          <div class="camera">
+            <video ref="video" width="640" height="480" autoplay></video>
+            <button @click="capturePhoto">拍照</button>
           </div>
           <DialogModalVue v-model="showDialog" :content="dialogContent"></DialogModalVue>
           <!-- <p class="text-grey-500 mt-4 mb-2 px-4">請選擇要申請的項目</p>
