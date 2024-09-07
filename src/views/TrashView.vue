@@ -301,6 +301,17 @@ const uploadImage = async (formData) => {
   }
 };
 
+const selectedOption = ref('');
+const options = [
+  { text: '台灣台北市垃圾分類模型', value: 'model-taipei' },
+  { text: '台灣台中市垃圾分類模型', value: 'model-taichung' },
+  { text: '日本東京垃圾分類模型', value: 'model-tokyo' }
+];
+
+const handleSelection = () => {
+  console.log('已選擇：' + selectedOption.value);
+};
+
 const activeSituation = ref('apply');
 
 const caseProgress = ref(caseProgressJson);
@@ -391,14 +402,31 @@ const activeRecord = computed(() =>
               <button class="search-button bg-div" @click="onSearchClick">
                 <img src="@/assets/images/search-icon.svg" alt="搜尋" />
               </button>
+              <div style="margin: 0px 5px">
+                <label for="options">選擇一個模型：</label>
+                <select
+                  v-model="selectedOption"
+                  @change="handleSelection"
+                  style="border: solid 2px black; border-radius: 5px"
+                >
+                  <option v-for="option in options" :key="option.value" :value="option.value">
+                    {{ option.text }}
+                  </option>
+                </select>
+                <p>你選擇的是：{{ selectedOption }}</p>
+              </div>
             </section>
             <div v-if="!isCamera && !isPhotoPreview" class="flex justify-center">
               <div
-                class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center cursor-pointer bg-div"
+                class="w-11/12 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center cursor-pointer bg-div"
                 @click="triggerFileInput"
               >
-                <i class="fa-solid fa-cloud-arrow-up text-8xl text-white py-4 select-none"></i>
-                <p class="text-white text-center select-none">上傳想要詢問的垃圾~</p>
+                <div class="flex justify-evenly items-center">
+                  <div><i class="fa-solid fa-camera-retro text-8xl text-white py-4 select-none"></i></div>
+                  <div><p class="py-4 select-none text-8xl text-white px-4">&</p></div>
+                  <div><i class="fa-solid fa-cloud-arrow-up text-8xl text-white py-4 select-none"></i></div>
+                </div>
+                <p class="text-white text-center select-none">拍攝或上傳想要詢問的垃圾~</p>
               </div>
               <input
                 type="file"
@@ -407,13 +435,13 @@ const activeRecord = computed(() =>
                 @change="handleFileUpload"
                 accept="image/*"
               />
-              <div
+              <!-- <div
                 class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center cursor-pointer bg-div"
                 @click="startCamera"
               >
                 <i class="fa-solid fa-camera-retro text-8xl text-white py-4 select-none"></i>
                 <p class="text-white text-center select-none">拍攝想要詢問的垃圾~</p>
-              </div>
+              </div> -->
             </div>
             <div
               v-if="isCamera && !isPhotoPreview"
@@ -465,25 +493,25 @@ const activeRecord = computed(() =>
               <h1 class="my-5 text-2xl font-black">垃圾分類介紹</h1>
               <div class="flex justify-evenly flex-wrap w-full">
                 <div
-                  class="w-5/12 my-4 rounded-lg h-20 flex items-center justify-center cursor-pointer bg-re-div"
+                  class="w-5/12 my-4 rounded-lg h-16 flex items-center justify-center cursor-pointer bg-re-div"
                   @click="onClick('立體類')"
                 >
                   立體類
                 </div>
                 <div
-                  class="w-5/12 my-4 rounded-lg h-20 flex items-center justify-center cursor-pointer bg-re-div"
+                  class="w-5/12 my-4 rounded-lg h-16 flex items-center justify-center cursor-pointer bg-re-div"
                   @click="onClick('平面類')"
                 >
                   平面類
                 </div>
                 <div
-                  class="w-5/12 my-4 rounded-lg h-20 flex items-center justify-center cursor-pointer bg-re-div"
+                  class="w-5/12 my-4 rounded-lg h-16 flex items-center justify-center cursor-pointer bg-re-div"
                   @click="onClick('其他類')"
                 >
                   其他類
                 </div>
                 <div
-                  class="w-5/12 my-4 rounded-lg h-20 flex items-center justify-center cursor-pointer bg-re-div"
+                  class="w-5/12 my-4 rounded-lg h-16 flex items-center justify-center cursor-pointer bg-re-div"
                   @click="onClick('一般垃圾')"
                 >
                   一般垃圾
