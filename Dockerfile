@@ -1,5 +1,5 @@
 # stage1: build
-FROM node:22.7.0 AS builder
+FROM node:lts-alpine AS builder
 WORKDIR /app
 # install pnpm
 RUN npm install -g pnpm
@@ -13,7 +13,7 @@ RUN pnpm install
  
 # Copy the rest of the application code to the container
 COPY . .
- 
+
 # Build the application
 RUN pnpm build
 
