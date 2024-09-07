@@ -27,7 +27,6 @@
         <img src="@/assets/images/cancel-icon.svg" />
       </button>
       <h3 class="text-lg font-bold mb-4">選單</h3>
-<<<<<<< HEAD
       <div class="list-container">
         <button @click="toggleLayerVisibility('dogpoo')"
           class="bg-blue-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-600 transition-all duration-300">
@@ -44,30 +43,6 @@
       </div>
       <button @click="resetCenter"
         class="bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300">
-=======
-      <button
-        @click="toggleLayerVisibility('dogpoo')"
-        class="bg-blue-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-600 transition-all duration-300"
-      >
-        狗便清潔箱
-      </button>
-      <button
-        @click="toggleLayerVisibility('cleanbox')"
-        class="bg-green-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-green-600 transition-all duration-300"
-      >
-        行人專用清潔箱
-      </button>
-      <button
-        @click="toggleAllTrashcarLayersVisibility"
-        class="bg-yellow-300 text-gray-800 w-full py-3 rounded-full shadow hover:bg-yellow-400 transition-all duration-300"
-      >
-        垃圾車站點
-      </button>
-      <button
-        @click="resetCenter"
-        class="bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300"
-      >
->>>>>>> 568430695f1a51cd1357d3dd3071cfd7abf4a6f4
         回到定位
       </button>
       <button
