@@ -24,7 +24,7 @@ FROM nginx:latest
 RUN rm -f /etc/nginx/conf.d/default.conf
 
 # copy the Nginx configuration file from the current directory
-COPY nginx.conf /etc/nginx/conf.d/
+COPY default.conf /etc/nginx/conf.d/
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 8080
