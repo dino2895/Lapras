@@ -233,7 +233,7 @@ h3 {
   padding: 6px;
 }
 
-btn:hover {
+.btn:hover{
   background-color: rgb(0, 0, 0);
   color: rgb(242, 235, 193);
 }
