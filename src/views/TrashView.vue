@@ -199,7 +199,7 @@ const activeRecord = computed(() =>
           </div>
           <div class="camera">
             <video ref="video" width="640" height="480" autoplay></video>
-            <button @click="capturePhoto">拍照</button>
+            <button @click="capturePhoto" class="bg-black text-white">拍照</button>
           </div>
           <DialogModalVue v-model="showDialog" :content="dialogContent"></DialogModalVue>
           <!-- <p class="text-grey-500 mt-4 mb-2 px-4">請選擇要申請的項目</p>
