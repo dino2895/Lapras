@@ -1,6 +1,4 @@
-![image](https://github.com/user-attachments/assets/030f8e43-a60d-4999-9020-cf428c6b6391)
-
-# TownPass-Services
+# Lapras-Services
 
 TownPass-Services project made with Vue3 in Vite.
 
@@ -31,3 +29,4 @@ pnpm build
 ```sh
 pnpm lint
 ```
+![image](https://github.com/user-attachments/assets/030f8e43-a60d-4999-9020-cf428c6b6391)
