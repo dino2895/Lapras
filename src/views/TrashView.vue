@@ -303,9 +303,9 @@ const uploadImage = async (formData) => {
 
 const selectedOption = ref('');
 const options = [
-  { text: '台灣台北市垃圾分類模型', value: 'model-taipei' },
-  { text: '台灣台中市垃圾分類模型', value: 'model-taichung' },
-  { text: '日本東京垃圾分類模型', value: 'model-tokyo' }
+  { text: '台北垃圾分類模型', value: 'model-taipei' },
+  { text: '台中垃圾分類模型', value: 'model-taichung' },
+  { text: '東京垃圾分類模型', value: 'model-tokyo' }
 ];
 
 const handleSelection = () => {
@@ -397,13 +397,13 @@ const activeRecord = computed(() =>
               <BaseInput
                 v-model="chatMsgValue"
                 placeholder="您想要丟的垃圾是？"
-                class="flex-grow"
+                class="w-1/2"
               />
               <button class="search-button bg-div" @click="onSearchClick">
                 <img src="@/assets/images/search-icon.svg" alt="搜尋" />
               </button>
               <div style="margin: 0px 5px">
-                <label for="options">選擇一個模型：</label>
+                <label for="options">選擇模型：</label>
                 <select
                   v-model="selectedOption"
                   @change="handleSelection"
@@ -413,7 +413,7 @@ const activeRecord = computed(() =>
                     {{ option.text }}
                   </option>
                 </select>
-                <p>你選擇的是：{{ selectedOption }}</p>
+                <p>模型：{{ selectedOption }}</p>
               </div>
             </section>
             <div v-if="!isCamera && !isPhotoPreview" class="flex justify-center">
