@@ -11,3 +11,6 @@ steps:
   args: ['run', 'deploy', 'lapras-service', '--image', 'asia-east1-docker.pkg.dev/the-program-434809-a3/lapras', '--region', 'asia-east1']
 images:
 - asia-east1-docker.pkg.dev/the-program-434809-a3/lapras
+
+options:
+  logging: CLOUD_LOGGING_ONLY
