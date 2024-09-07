@@ -12,6 +12,7 @@ import ServiceStep from '@/components/molecules/ServiceStep.vue';
 import serviceListJson from '../../public/mock/service_list.json';
 import caseProgressJson from '../../public/mock/case_progress.json';
 import type { User } from '@/stores/user';
+import MapView from '../components/organisms/MapView.vue';
 
 const store = useFormStore();
 
@@ -218,45 +219,7 @@ const activeRecord = computed(() =>
       </template>
       <template #tab1>
         <div class="p-4">
-          <section class="grid grid-cols-2">
-            <button
-              class="situation-button"
-              :class="{ 'situation-button--active': activeSituation === 'apply' }"
-              @click="activeSituation = 'apply'"
-            >
-              申辦中({{ applyRecord.length }})
-            </button>
-            <button
-              class="situation-button"
-              :class="{ 'situation-button--active': activeSituation === 'done' }"
-              @click="activeSituation = 'done'"
-            >
-              已結案({{ finishRecord.length }})
-            </button>
-          </section>
-          <section v-if="!activeRecord.length" class="flex flex-col items-center pt-40">
-            <p class="text-primary-500 font-bold">
-              目前無{{ activeSituation === 'apply' ? '申辦' : '結案' }}紀錄
-            </p>
-          </section>
-          <section v-else>
-            <ul class="py-4 grid grid-cols-1 gap-y-4">
-              <li v-for="item in activeRecord" :key="item.id">
-                <p>{{ item.name }}</p>
-                <div class="mt-1 mb-4 flex justify-between pr-6">
-                  <div class="text-gray-500 text-sm">
-                    <p class="mb-1">{{ item.id }}</p>
-                    <p>申報日期：{{ item.date }}</p>
-                  </div>
-                  <div class="flex flex-col items-center">
-                    <img src="@/assets/images/review-icon.svg" />
-                    <span class="text-sm">{{ item.status }}</span>
-                  </div>
-                </div>
-                <ServiceStep :stepCount="item.total_step" :activeStep="item.current_step" />
-              </li>
-            </ul>
-          </section>
+          <MapView />
         </div>
       </template>
     </TrashTabsView>

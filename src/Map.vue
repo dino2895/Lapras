@@ -110,25 +110,104 @@ export default defineComponent({
             } catch (error) {
                 console.error('Error fetching route from Directions API:', error);
             }
-        };
-
-        // GeoJSON 數據
-        interface GeoJSONFeature {
-            type: 'Feature';
-            geometry: {
-                type: 'Point';
-                coordinates: [number, number];
-            };
-            properties: {
-                title: string;
-            };
+          });
+        } else {
+          console.error('No route data found from Directions API.');
         }
+      } catch (error) {
+        console.error('Error fetching route from Directions API:', error);
+      }
+    };
 
-        interface GeoJSONFeatureCollection {
-            type: 'FeatureCollection';
-            features: GeoJSONFeature[];
+    // GeoJSON 數據
+    interface GeoJSONFeature {
+      type: 'Feature';
+      geometry: {
+        type: 'Point';
+        coordinates: [number, number];
+      };
+      properties: {
+        title: string;
+      };
+    }
+
+    interface GeoJSONFeatureCollection {
+      type: 'FeatureCollection';
+      features: GeoJSONFeature[];
+    }
+
+    const pointsJSON: GeoJSONFeatureCollection = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [121.540592, 25.056111] // 經度和緯度
+          },
+          properties: {
+            title: '所在地'
+          }
         }
+      ]
+    };
 
+    const updateUserLocation = (coords: [number, number]) => {
+      pointsJSON.features[0].geometry.coordinates = coords;
+
+      const source = mapInstance.value?.getSource('points');
+
+      // 確認 source 是一個 GeoJSONSource
+      if (source && (source as mapboxgl.GeoJSONSource).setData) {
+        (source as mapboxgl.GeoJSONSource).setData(pointsJSON);
+      } else {
+        console.error("Source 'points' is not a GeoJSONSource or does not support setData.");
+      }
+    };
+
+    onMounted(() => {
+      mapboxgl.accessToken =
+        'pk.eyJ1IjoicmljaDc0MjAiLCJhIjoiY20wa3B2ZnlxMWJraDJrb2I1a2I4ZzMwcSJ9.MQC2ef9isDmw5Uc37uiqeg'; // 替換成你的 Mapbox API 金鑰
+      var userCoords: [number, number] = [121.540592, 25.056111];
+
+      // 獲取用戶位置
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            userCoords = [position.coords.longitude, position.coords.latitude];
+
+            // 更新地圖中心到用戶GPS位址
+            mapInstance.value!.setCenter(userCoords);
+
+            // 更新GeoJSON圖層數據
+            updateUserLocation(userCoords);
+          },
+          (error) => {
+            console.error('Error getting user location:', error);
+          }
+        );
+      } else {
+        console.error('Geolocation is not supported by this browser.');
+      }
+
+      mapInstance.value = new mapboxgl.Map({
+        container: 'map', // 對應上面的 id="map"
+        style: 'mapbox://styles/rich7420/cm0mii7r6002y01r3ao4pfbag', // 地圖樣式
+        center: userCoords, // 設定地圖中心 [經度, 緯度]
+        zoom: 12.5, // 設定初始縮放級別
+        pitch: 45, // 攝像機俯仰角度
+        bearing: -17.6 // 攝像機方向角度
+      });
+
+      // 添加中文語言支持
+      mapInstance.value.addControl(new MapboxLanguage({ defaultLanguage: 'zh-Hant' }));
+
+      // 加載圖片並添加到地圖上
+      mapInstance.value.loadImage(imagePath, (error, image) => {
+        if (error) {
+          console.error('圖片加載失敗:', error);
+          return;
+        }
         const pointsJSON: GeoJSONFeatureCollection = {
             type: 'FeatureCollection',
             features: [
@@ -169,14 +248,17 @@ export default defineComponent({
                         mapInstance.value!.setCenter(userCoords);
                         updateUserLocation(userCoords);
                     },
-                    (error) => {
-                        console.error('Error getting user location:', error);
-                    }
-                );
+                    labelLayerId
+                  );
+                } else {
+                  console.error('No symbol layer with text-field found.');
+                }
+              } else {
+                console.error('No style or layers found in the map.');
+              }
             } else {
-                console.error('Geolocation is not supported by this browser.');
+              console.error('Map instance is not initialized.');
             }
-
             mapInstance.value = new mapboxgl.Map({
                 container: 'map',
                 style: 'mapbox://styles/rich7420/cm0mii7r6002y01r3ao4pfbag',
@@ -327,9 +409,9 @@ export default defineComponent({
             });
         });
 
-        return {
-            toggleLayerVisibility,
-        };
-    },
+    return {
+      toggleLayerVisibility
+    };
+  }
 });
 </script>
