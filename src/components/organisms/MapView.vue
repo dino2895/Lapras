@@ -28,6 +28,7 @@
       </button>
       <h3 class="text-lg font-bold mb-4">選單</h3>
       <div class="list-container">
+        <p style="padding: 5px;">點擊想要顯示的圖示</p>
         <button @click="toggleLayerVisibility('dogpoo')"
           class="bg-blue-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-600 transition-all duration-300">
           狗便清潔箱
@@ -41,23 +42,24 @@
           垃圾車站點
         </button>
       </div>
-      <button @click="resetCenter"
-        class="bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300">
-        回到定位
-      </button>
-      <button
-        @click="toggleNavigation"
-        class="bg-purple-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-purple-600 transition-all duration-300"
-      >
-        導航模式
-      </button>
-      <button
-        @click="toggleSidebar"
-        class="bg-green-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300"
-      >
-        提醒
-      </button>
-      
+      <div class="list-other-container">
+        <button @click="resetCenter"
+          class="bg-red-500 text-white px-6 py-3 w-full rounded-full shadow-lg hover:bg-red-600 transition-all duration-300">
+          回到目前定位
+        </button>
+        <button
+          @click="toggleNavigation"
+          class="bg-purple-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-purple-600 transition-all duration-300"
+        >
+          導航模式
+        </button>
+        <button
+          @click="toggleSidebar"
+          class="bg-green-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300"
+        >
+          鬧鐘列表
+        </button>
+      </div>
     </div>
   </transition>
 
@@ -797,10 +799,19 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border: solid 5px rgb(145, 132, 230);
+  border: solid 5px rgb(132, 196, 230);
   border-radius: 10px 10px 10px 10px;
   padding: 10px;
   margin-bottom: 10px;
+}
+
+.list-other-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: solid 5px rgb(255, 255, 255);
+  border-radius: 10px 10px 10px 10px;
+  padding: 10px;
 }
 
 .aaa{
