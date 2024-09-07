@@ -17,6 +17,9 @@
   <transition name="slide">
     <div v-show="showMenu"
       class="absolute top-16 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg z-20 p-6 w-80 text-center">
+      <button @click="toggleMenu" class="style1">
+        <img src="@/assets/images/cancel-icon.svg" />
+      </button>
       <h3 class="text-lg font-bold mb-4">選單</h3>
       <button @click="toggleLayerVisibility('dogpoo')"
         class="bg-blue-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-600 transition-all duration-300">
@@ -697,5 +700,10 @@ export default defineComponent({
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.style1{
+  display: flex;
+  justify-content: flex-start;
 }
 </style>
