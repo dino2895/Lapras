@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full h-screen" id="map"></div>
+  <div class="w-full h-screen" id="map"></div>
   <!-- 釘選按鈕 -->
   <div class="absolute top-4 left-0 right-0 z-10 flex justify-center space-x-4">
     <button
