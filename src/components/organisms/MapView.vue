@@ -13,7 +13,6 @@
     </button>
   </div>
 
-  <!-- 選單內容 -->
   <transition name="slide">
     <div v-show="showMenu"
       class="absolute top-16 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg z-20 p-6 w-80 text-center">
@@ -43,6 +42,7 @@
         提醒
       </button>
     </div>
+
   </transition>
 
   <!-- 側邊欄 -->
@@ -55,26 +55,26 @@
         </svg>
       </button>
       <h2 class="text-lg font-bold mb-6">提醒</h2>
-      <div class="mb-6">
-        <input v-model.number="alarmMinutes" type="number" placeholder="設置鬧鐘分鐘"
-          class="border p-3 w-full rounded mb-4" />
-        <button @click="setAlarm"
-          class="bg-blue-500 text-white w-full py-3 rounded-full shadow hover:bg-blue-600 transition-all duration-300">
-          設定鬧鐘
-        </button>
+      <div v-if="alarms.length === 0" class="text-center text-gray-500">
+        尚未有已設定的鬧鐘
       </div>
-      <ul>
-        <li v-for="(alarm, index) in alarms" :key="index" class="flex justify-between items-center mb-4">
-          <span>{{ alarm.minutes }} 分鐘</span>
-          <span>{{ alarm.timeRemaining }} 秒後響</span>
-          <button @click="removeAlarm(index)"
-            class="text-red-500 hover:text-red-600 transition-all duration-300">刪除</button>
+      <ul v-else>
+        <li v-for="(alarm, index) in alarms" :key="index" class="flex flex-col mb-4">
+          <div class="flex justify-between items-center">
+            <span>抵達時間：{{ alarm.arrivalTime }}</span>
+            <span>提前 {{ alarm.minutes }} 分鐘響</span>
+            <span>{{ alarm.timeRemaining }} 秒後響</span>
+            <button @click="removeAlarm(index)" class="text-red-500 hover:text-red-600 transition-all duration-300">
+              刪除
+            </button>
+          </div>
         </li>
       </ul>
+
     </div>
   </transition>
-</template>
 
+</template>
 
 
 <script lang="ts">
@@ -85,6 +85,7 @@ import MapboxLanguage from '@mapbox/mapbox-gl-language';
 import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
 import imagePath from '@/assets/images/geo-point.png';
+
 
 export default defineComponent({
   name: 'MapView',
@@ -137,56 +138,55 @@ export default defineComponent({
       }
     };
 
-    // 鬧鐘功能
-    const alarmMinutes = ref(0); // 設定鬧鐘分鐘
-    const alarmTimeout = ref<NodeJS.Timeout | null>(null); // 計時器
-    const alarmMessage = ref<string | null>(null); // 顯示鬧鐘訊息
-    const alarms = ref<
-      Array<{
-        minutes: number;
-        timeRemaining: number;
-        intervalId: NodeJS.Timeout | null;
-      }>
-    >([]); // 鬧鐘清單
 
-    const setAlarm = () => {
-      if (alarmTimeout.value) clearTimeout(alarmTimeout.value);
+    // 鬧鐘相關狀態
+    const alarms = ref<{ minutes: number, arrivalTime: string, timeRemaining: number, interval: NodeJS.Timeout }[]>([]);
 
-      const timeInMs = alarmMinutes.value * 60 * 1000;
-      if (timeInMs > 0) {
-        alarmTimeout.value = setTimeout(() => {
-          alarmMessage.value = '垃圾車來囉！';
-          setTimeout(() => (alarmMessage.value = null), 5000); // 鬧鐘訊息顯示5秒
-        }, timeInMs);
+    const setAlarm = (minutes: number, arrivalTime: number) => {
+      if (minutes > 0 && arrivalTime) {
+        const hours = Math.floor(arrivalTime / 100);
+        const minutesOfArrival = arrivalTime % 100;
 
-        // 添加到鬧鐘清單並啟動倒數計時
-        const intervalId = setInterval(() => {
-          alarms.value = alarms.value.map((alarm) => {
-            if (alarm.timeRemaining > 0) {
-              return {
-                ...alarm,
-                timeRemaining: alarm.timeRemaining - 1
-              };
-            } else {
-              clearInterval(intervalId);
-              return alarm;
-            }
-          });
-        }, 1000);
+        const now = new Date();
+        const arrivalDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutesOfArrival);
+        const alarmTime = new Date(arrivalDate.getTime() - minutes * 60000);
 
-        alarms.value.push({
-          minutes: alarmMinutes.value,
-          timeRemaining: Math.floor(timeInMs / 1000),
-          intervalId
-        });
+        console.log("alarmTime",alarmTime)
+        console.log("now",now)
+
+
+        if (alarmTime > now) {
+          const timeUntilAlarm = (alarmTime.getTime() - now.getTime()) / 1000;
+
+          const alarm = {
+            minutes: minutes,
+            arrivalTime: arrivalTime,
+            timeRemaining: timeUntilAlarm,
+            interval: setInterval(() => {
+              alarm.timeRemaining -= 1;
+              alarms.value = [...alarms.value]; 
+              if (alarm.timeRemaining <= 0) {
+                clearInterval(alarm.interval);
+                alert('鬧鐘時間到！');
+              }
+            }, 1000),
+          };
+
+          alarms.value.push(alarm); // 推送鬧鐘資料
+          console.log("alarm",alarm)
+          alarms.value = [...alarms.value]; // 強制更新 Vue 視圖
+
+          alert(`鬧鐘已設定，將在 ${minutes} 分鐘前提醒你`);
+        } else {
+          alert('鬧鐘時間無效，請設定一個未來的時間');
+        }
+      } else {
+        alert('請輸入有效的分鐘數和到達時間');
       }
     };
 
     const removeAlarm = (index: number) => {
-      const alarm = alarms.value[index];
-      if (alarm.intervalId) {
-        clearInterval(alarm.intervalId);
-      }
+      clearInterval(alarms.value[index].interval);
       alarms.value.splice(index, 1);
     };
 
@@ -197,6 +197,18 @@ export default defineComponent({
     const toggleMenu = () => {
       showMenu.value = !showMenu.value;
     };
+
+    // 更新彈出框設置鬧鐘的邏輯
+    const setAlarmInPopup = (minutes: number, arrivalTime: number, popup: mapboxgl.Popup) => {
+  if (minutes > 0 && arrivalTime) {
+    setAlarm(minutes, arrivalTime); // 使用 setAlarm 來設定鬧鐘
+    popup.remove(); // 關閉彈出框
+  } else {
+    alert('請輸入有效的分鐘數和到達時間');
+  }
+};
+
+
 
     // 繪製路徑的函數
     const drawRouteWithTrashcarData = async (layerName) => {
@@ -479,35 +491,29 @@ export default defineComponent({
 
               if (features.length) {
                 const clickedFeature = features[0];
-                console.log('Clicked feature:', clickedFeature);  // 調試點擊功能
-
-                const coordinates =
-                  clickedFeature.geometry?.type === 'Point'
-                    ? clickedFeature.geometry.coordinates
-                    : null;
+                const coordinates = clickedFeature.geometry?.type === 'Point'
+                  ? clickedFeature.geometry.coordinates
+                  : null;
 
                 const titleKey = Object.keys(clickedFeature.properties).find(key => key.trim() === 'title');
                 const title = clickedFeature.properties[titleKey];
+
                 if (clickedFeature.properties && title && coordinates) {
-                  alert(
-                    `此地點位於: ${title}\nCoordinates: [${coordinates[0]}, ${coordinates[1]}]`
-                  );
-                } else {
-                  console.log('No valid properties or coordinates found on clicked feature.');
+                  const popup = new mapboxgl.Popup()
+                    .setLngLat([event.lngLat.lng, event.lngLat.lat])
+                    .setHTML(`<div><input type="number" id="minutes" placeholder="提前幾分鐘" /><br /><button id="setAlarm">設定鬧鐘</button></div>`)
+                    .addTo(mapInstance.value!);
+
+                  document.getElementById('setAlarm')?.addEventListener('click', () => {
+                    const minutes = parseInt((document.getElementById('minutes') as HTMLInputElement).value);
+                    const arrivalTime = clickedFeature.properties['抵達時間']// 簡化為坐標時間
+                    setAlarmInPopup(minutes, arrivalTime, popup);
+                  });
                 }
-              } else {
-                console.log('No feature found at clicked location.');
+
               }
             });
 
-
-            mapInstance.value!.on('mousemove', (event) => {
-              const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-                layers: ['dogpoo', 'cleanbox', 'trashcar-1', 'trashcar-2', 'trashcar-3', 'trashcar-4', 'trashcar-5', 'trashcar-6', 'trashcar-7', 'trashcar-8', 'trashcar-9'],
-              });
-
-              mapInstance.value!.getCanvas().style.cursor = features.length ? 'pointer' : '';
-            });
             mapInstance.value!.addSource('mapbox-dem', {
               type: 'raster-dem',
               url: 'mapbox://mapbox.terrain-rgb',
@@ -609,15 +615,17 @@ export default defineComponent({
       toggleAllTrashcarLayersVisibility,
       resetCenter,
       toggleNavigation,
-      alarmMinutes,
       setAlarm,
-      alarmMessage,
       alarms,
       removeAlarm,
       showSidebar,
       toggleSidebar,
+      toggleMenu,
       showMenu,
-      toggleMenu
+      mapInstance,
+      directionsControl,
+      navigationEnabled,
+      destinationCoords,
     };
   }
 });
@@ -626,6 +634,14 @@ export default defineComponent({
 
 
 <style lang="css">
+.setAlarmButton {
+  background-color: yellow;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
 .mapboxgl-ctrl-directions {
   max-width: 12rem;
   width: 100%;
