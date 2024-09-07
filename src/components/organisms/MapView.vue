@@ -5,13 +5,13 @@
   <div class="absolute top-4 right-4 z-10 flex flex-col space-y-4">
     <button
       @click="toggleMenu"
-      class="w-20 bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300"
+      class="w-20 custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
     >
       選單
     </button>
     <button
       @click="resetCenter"
-      class="w-20 bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300"
+      class="w-20 custom-gray text-white px-6 py-3 rounded-full shadow-lg hover:bg-white transition-all duration-300"
     >
       <img src="@/assets/images/gps.png" />
     </button>
@@ -27,33 +27,39 @@
         <img src="@/assets/images/cancel-icon.svg" />
       </button>
       <h3 class="text-lg font-bold mb-4">選單</h3>
-      <div class="list-container">
-        <button @click="toggleLayerVisibility('dogpoo')"
-          class="bg-blue-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-600 transition-all duration-300">
-          狗便清潔箱
-        </button>
-        <button @click="toggleLayerVisibility('cleanbox')"
-          class="bg-green-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-green-600 transition-all duration-300">
-          行人專用清潔箱
-        </button>
-        <button @click="toggleAllTrashcarLayersVisibility"
-          class="bg-yellow-300 text-gray-800 w-full py-3 rounded-full shadow hover:bg-yellow-400 transition-all duration-300">
-          垃圾車站點
-        </button>
-      </div>
-      <button @click="resetCenter"
-        class="bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300">
+      <button
+        @click="toggleLayerVisibility('dogpoo')"
+        class="custom-blue text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transition-all duration-300"
+      >
+        狗便清潔箱
+      </button>
+      <button
+        @click="toggleLayerVisibility('cleanbox')"
+        class="custom-blue text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transition-all duration-300"
+      >
+        行人專用清潔箱
+      </button>
+      <button
+        @click="toggleAllTrashcarLayersVisibility"
+        class="custom-blue text-white w-full py-3 rounded-full shadow hover:bg-blue-300 transition-all duration-300"
+      >
+        垃圾車站點
+      </button>
+      <button
+        @click="resetCenter"
+        class="custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
+      >
         回到定位
       </button>
       <button
         @click="toggleNavigation"
-        class="bg-purple-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-purple-600 transition-all duration-300"
+        class="custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
       >
         導航模式
       </button>
       <button
         @click="toggleSidebar"
-        class="bg-green-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300"
+        class="custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
       >
         提醒
       </button>
@@ -809,6 +815,26 @@ export default defineComponent({
   justify-content: flex-start;
 }
 
+.blue {
+  color: #5ab4c5;
+}
+
+.white {
+  color: white;
+}
+
+.custom-blue {
+  background-color: #5ab4c5; /* 自定義藍色背景 */
+}
+
+.custom-gray {
+  background-color: #d9d9d9; /* 自定義輝色背景 */
+}
+
+.custom-littleblue {
+  background-color: #0d1719; /* 自定義淺色背景 */
+}
+
 .list-container {
   display: flex;
   flex-direction: column;
@@ -823,5 +849,4 @@ export default defineComponent({
   display: flex;
   justify-content: flex-start;
 } 
-
 </style>
