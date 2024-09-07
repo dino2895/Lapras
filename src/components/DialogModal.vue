@@ -6,8 +6,8 @@
       v-show="innerModelValue"
       @click="handleClickOutSide"
     >
-      <div class="header">
-        <slot name="header">垃圾類別為...</slot>
+      <div class="header title">
+        <slot name="header" class="">垃圾類別為...</slot>
       </div>
 
       <div class="body">
@@ -18,7 +18,7 @@
 
       <div class="footer">
         <slot>
-          <button class="btn" @click="innerModelValue = false">CLOSE</button>
+          <button class="btn btn_border" @click="innerModelValue = false">CLOSE</button>
         </slot>
       </div>
     </dialog>
@@ -111,9 +111,9 @@ export default {
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  height: 200px;
+  height: 400px;
   margin: auto;
-  max-width: 300px;
+  max-width: 800px;
   border-radius: 10px;
   padding: 20px;
   background-color: antiquewhite;
@@ -125,6 +125,10 @@ export default {
   text-transform: uppercase;
 }
 
+.body {
+  font-size: 16px;
+}
+
 .footer {
   margin-top: auto;
   display: flex;
@@ -133,10 +137,30 @@ export default {
 
 .btn {
   width: fit-content;
-  height: 30px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 16px;
+  padding: 6px;
 }
+
+btn:hover{
+  background-color: rgb(0, 0, 0);
+  color: rgb(242, 235, 193);
+}
+
+.title {
+  font-size: 24px;
+  
+}
+
+.btn_border{
+  border: solid 3px rgb(115, 115, 118);
+  border-radius: 10px 10px 10px 10px;
+  background-color: rgb(242, 235, 193);
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 </style>
