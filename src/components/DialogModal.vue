@@ -17,7 +17,7 @@
         </div>
 
         <div class="body">
-          <slot> 類別：{{ content }} </slot>
+          <slot style="width: 70%;"> 類別：{{ content }} </slot>
         </div>
 
         <hr style="border: 2px solid black; margin: 10px 0;" />
@@ -197,7 +197,7 @@ h3 {
   flex-direction: column;
   gap: 16px;
   width: 90%;
-  height: 400px;
+  height: 600px;
   margin: auto;
   max-width: 800px;
   border-radius: 10px;
@@ -211,6 +211,7 @@ h3 {
   text-transform: uppercase;
   font-size: 20px;
   margin: 5px 0 15px 0;
+  width: 70%;
 }
 
 .body {
@@ -225,7 +226,7 @@ h3 {
 
 .btn {
   width: fit-content;
-  height: 50px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -246,7 +247,7 @@ h3 {
   color: #f5ba4b;
   font-weight: bold;
   border: solid 3px #f5ba4b;
-  border-radius: 10px 10px 10px 10px;
+  border-radius: 10px;
   /* background-color: #f0c87c; */
   padding-left: 10px;
   padding-right: 10px;
