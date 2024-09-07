@@ -19,7 +19,14 @@ RUN pnpm build
 
 # stage2: deploy to nginx
 FROM nginx:latest
+
+# remove the default Nginx configuration file
+RUN rm -f /etc/nginx/conf.d/default.conf
+
+# copy the Nginx configuration file from the current directory
+COPY default.conf /etc/nginx/conf.d/
+
 COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
+EXPOSE 8080
 # start Nginx
 CMD ["nginx", "-g", "daemon off;"]
