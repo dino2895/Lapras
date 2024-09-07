@@ -1,8 +1,8 @@
+# Lapras-Services
+
+Lapras-Services project made with Vue3 in Vite.
+
 ![image](https://github.com/user-attachments/assets/030f8e43-a60d-4999-9020-cf428c6b6391)
-
-# TownPass-Services
-
-TownPass-Services project made with Vue3 in Vite.
 
 ## Recommended IDE Setup
 
@@ -31,3 +31,4 @@ pnpm build
 ```sh
 pnpm lint
 ```
+![f03985b3592de4c132f47ea359f8e700f86f1a3b](https://github.com/user-attachments/assets/d0eb0228-4818-4087-b90d-9917dc168cf5)

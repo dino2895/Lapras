@@ -3,55 +3,83 @@
 
   <!-- 垂直靠右排列的按鈕 -->
   <div class="absolute top-4 right-4 z-10 flex flex-col space-y-4">
-    <button @click="toggleMenu"
-      class="w-20 bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300">
+    <button
+      @click="toggleMenu"
+      class="w-20 custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
+    >
       選單
     </button>
-    <button @click="resetCenter"
-      class="w-20 bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300">
-      <img src="@/assets/images/gps.png">
+    <button
+      @click="resetCenter"
+      class="bg-white text-white w-12 h-12 rounded-full shadow-lg hover: custom-gray transition-all duration-300 ml-auto"
+      style="display: block"
+    >
+      <img src="@/assets/images/gps.png" class="w-6 h-6 mx-auto" />
     </button>
   </div>
 
   <transition name="slide">
-    <div v-show="showMenu"
-      class="absolute top-16 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg z-20 p-6 w-80 text-center">
+    <div
+      v-show="showMenu"
+      class="absolute top-16 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg z-20 p-6 w-80 text-center"
+    >
+      <button @click="toggleMenu" class="style1">
+        <img src="@/assets/images/cancel-icon.svg" />
+      </button>
       <h3 class="text-lg font-bold mb-4">選單</h3>
-      <button @click="toggleLayerVisibility('dogpoo')"
-        class="bg-blue-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-600 transition-all duration-300">
-        狗便清潔箱
-      </button>
-      <button @click="toggleLayerVisibility('cleanbox')"
-        class="bg-green-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-green-600 transition-all duration-300">
-        行人專用清潔箱
-      </button>
-      <button @click="toggleAllTrashcarLayersVisibility"
-        class="bg-yellow-300 text-gray-800 w-full py-3 rounded-full shadow hover:bg-yellow-400 transition-all duration-300">
-        垃圾車站點
-      </button>
-      <button @click="resetCenter"
-        class="bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300">
-        回到定位
-      </button>
-      <button @click="toggleNavigation"
-        class="bg-purple-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-purple-600 transition-all duration-300">
-        導航模式
-      </button>
-      <button @click="toggleSidebar"
-        class="bg-green-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300">
-        提醒
-      </button>
+
+      <div class="list-container">
+        <p style="padding: 5px;">點擊想要顯示的圖示</p>
+        <button @click="toggleLayerVisibility('dogpoo')"
+          class="custom-dog text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transition-all duration-300">
+          狗便清潔箱
+        </button>
+        <button @click="toggleLayerVisibility('cleanbox')"
+          class="custom-blue text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transiion-all duration-300">
+          行人專用清潔箱
+        </button>
+        <button @click="toggleAllTrashcarLayersVisibility"
+          class="custom-car text-white w-full py-3 rounded-full shadow hover:bg-blue-300 transition-all duration-300">
+          垃圾車站點
+        </button>
+      </div>
+      <div class="list-other-container">
+        <button @click="resetCenter"
+          class="custom-heavygray text-white px-6 py-3 w-full rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
+          回到目前定位
+        </button>
+        <button
+          @click="toggleNavigation"
+          class="custom-heavygray text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
+        >
+          導航模式
+        </button>
+        <button
+          @click="toggleSidebar"
+          class="custom-heavygray text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
+        >
+          鬧鐘列表
+        </button>
+      </div>
+
     </div>
 
   </transition>
 
   <!-- 側邊欄 -->
   <transition name="slide">
-    <div v-show="showSidebar"
-      class="fixed top-0 right-0 bottom-0 bg-white w-80 p-6 shadow-lg z-20 transition-transform transform translate-x-0">
+    <div
+      v-show="showSidebar"
+      class="fixed top-0 right-0 bottom-0 bg-white w-80 p-6 shadow-lg z-20 transition-transform transform translate-x-0"
+    >
       <button @click="toggleSidebar" class="absolute top-4 left-4 text-gray-600">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
         </svg>
       </button>
       <h2 class="text-lg font-bold mb-6">提醒</h2>
@@ -108,14 +136,27 @@ export default defineComponent({
       if (!mapInstance.value) return;
 
       const layers = mapInstance.value.getStyle().layers;
+      let isVisible = false; // 用於追蹤新的可見性狀態
 
-      layers.forEach(layer => {
+      layers.forEach((layer) => {
         if (layer.id.startsWith('trashcar-')) {
           const currentVisibility = mapInstance.value.getLayoutProperty(layer.id, 'visibility');
           const newVisibility = currentVisibility === 'visible' ? 'none' : 'visible';
           mapInstance.value.setLayoutProperty(layer.id, 'visibility', newVisibility);
+
+          // 更新 isVisible 變量
+          if (newVisibility === 'visible') {
+            isVisible = true;
+          }
         }
       });
+
+      // 根據新的可見性狀態顯示提示信息
+      if (isVisible) {
+        alert('垃圾車站點 顯示');
+      } else {
+        alert('垃圾車站點 隱藏');
+      }
     };
 
     // 切換圖層可見性
@@ -130,6 +171,13 @@ export default defineComponent({
           // 只適用circle類型圖層
           mapInstance.value.setPaintProperty(layerId, 'circle-opacity', newOpacity);
           layersVisibility.value[layerId] = !visibility;
+
+          // 根據圖層可見性顯示對應的 alert
+          if (!visibility) {
+            alert(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 顯示`);
+          } else {
+            alert(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 隱藏`);
+          }
         } else {
           console.error(`Layer ${layerId} does not exist.`);
         }
@@ -143,7 +191,7 @@ export default defineComponent({
     const alarms = ref<{ minutes: number, arrivalTime: string, timeRemaining: number, interval: NodeJS.Timeout }[]>([]);
 
     const setAlarm = (minutes: number, arrivalTime: number) => {
-      if (minutes > 0 && arrivalTime) {
+      if (minutes > 0) {
         const hours = Math.floor(arrivalTime / 100);
         const minutesOfArrival = arrivalTime % 100;
 
@@ -225,7 +273,7 @@ export default defineComponent({
       }
 
       const features = mapInstance.value.queryRenderedFeatures({
-        layers: [layerName],
+        layers: [layerName]
       });
 
       if (features.length === 0) {
@@ -257,8 +305,8 @@ export default defineComponent({
             data: {
               type: 'Feature',
               properties: {},
-              geometry: route,
-            },
+              geometry: route
+            }
           });
 
           mapInstance.value.addLayer({
@@ -267,12 +315,12 @@ export default defineComponent({
             source: routeSourceId, // 使用固定的 source ID
             layout: {
               'line-join': 'round',
-              'line-cap': 'round',
+              'line-cap': 'round'
             },
             paint: {
               'line-color': '#3b9ddd',
-              'line-width': 4,
-            },
+              'line-width': 4
+            }
           });
         } else {
           console.error('No route data found from Directions API.');
@@ -306,13 +354,13 @@ export default defineComponent({
           type: 'Feature',
           geometry: {
             type: 'Point',
-            coordinates: [121.540592, 25.056111],
+            coordinates: [121.540592, 25.056111]
           },
           properties: {
-            title: '所在地',
-          },
-        },
-      ],
+            title: '所在地'
+          }
+        }
+      ]
     });
 
     const updateUserLocation = (coords: [number, number]) => {
@@ -325,7 +373,7 @@ export default defineComponent({
         } else {
           console.error("Source 'points' is not a GeoJSONSource or does not support setData.");
         }
-        console.log(pointsJSON.value.features[0].geometry.coordinates)
+        console.log(pointsJSON.value.features[0].geometry.coordinates);
       } else {
         console.error('pointsJSON features array is empty or undefined.');
       }
@@ -357,17 +405,19 @@ export default defineComponent({
     const toggleNavigation = () => {
       if (navigationEnabled.value && directionsControl.value) {
         // 停用導航
+        alert('關閉導航');
         mapInstance.value?.removeControl(directionsControl.value);
         navigationEnabled.value = false;
         resetCenter();
       } else {
         // 啟用導航
+        alert('啟用導航');
         if (!mapInstance.value) return;
 
         directionsControl.value = new MapboxDirections({
           accessToken: mapboxgl.accessToken,
           unit: 'metric',
-          profile: 'mapbox/driving',
+          profile: 'mapbox/driving'
         });
         mapInstance.value.addControl(directionsControl.value, 'top-left');
         navigationEnabled.value = true;
@@ -375,23 +425,46 @@ export default defineComponent({
     };
 
     const navigateToCircleLayer = () => {
-      if (mapInstance.value && destinationCoords.value && navigationEnabled.value && directionsControl.value) {
+      if (
+        mapInstance.value &&
+        destinationCoords.value &&
+        navigationEnabled.value &&
+        directionsControl.value
+      ) {
         // 設置導航起點和終點
-        navigator.geolocation.getCurrentPosition((position) => {
-          const userCoords: [number, number] = [position.coords.longitude, position.coords.latitude];
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userCoords: [number, number] = [
+              position.coords.longitude,
+              position.coords.latitude
+            ];
 
-          directionsControl.value!.setOrigin(userCoords); // 設置起點為當前位置
-          directionsControl.value!.setDestination(destinationCoords.value); // 設置終點為點擊的圓圈層位置
-        }, (error) => {
-          console.error('Error getting user location:', error);
-        });
+            directionsControl.value!.setOrigin(userCoords); // 設置起點為當前位置
+            directionsControl.value!.setDestination(destinationCoords.value); // 設置終點為點擊的圓圈層位置
+          },
+          (error) => {
+            console.error('Error getting user location:', error);
+          }
+        );
       }
     };
 
     // 點擊圓圈圖層，設置導航終點
     const handleCircleClick = (event: mapboxgl.MapMouseEvent) => {
       const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-        layers: ['dogpoo', 'cleanbox', 'trashcar-1', 'trashcar-2', 'trashcar-3', 'trashcar-4', 'trashcar-5', 'trashcar-6', 'trashcar-7', 'trashcar-8', 'trashcar-9'], // 指定圓圈圖層名稱
+        layers: [
+          'dogpoo',
+          'cleanbox',
+          'trashcar-1',
+          'trashcar-2',
+          'trashcar-3',
+          'trashcar-4',
+          'trashcar-5',
+          'trashcar-6',
+          'trashcar-7',
+          'trashcar-8',
+          'trashcar-9'
+        ] // 指定圓圈圖層名稱
       });
 
       if (features.length > 0) {
@@ -451,12 +524,10 @@ export default defineComponent({
           mapInstance.value!.addImage('pointImg', image);
 
           mapInstance.value!.on('load', () => {
-
-
             // 添加 GeoJSON source
             mapInstance.value!.addSource('points', {
               type: 'geojson',
-              data: pointsJSON.value,  // 使用初始的 GeoJSON 數據
+              data: pointsJSON.value // 使用初始的 GeoJSON 數據
             });
 
             // 添加圖層
@@ -466,8 +537,8 @@ export default defineComponent({
               source: 'points',
               layout: {
                 'icon-image': 'pointImg',
-                'icon-size': 0.05,
-              },
+                'icon-size': 0.05
+              }
             });
 
             mapInstance.value!.on('click', (event) => {
@@ -483,10 +554,21 @@ export default defineComponent({
               }
             });
 
-
             mapInstance.value!.on('click', (event) => {
               const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-                layers: ['dogpoo', 'cleanbox', 'trashcar-1', 'trashcar-2', 'trashcar-3', 'trashcar-4', 'trashcar-5', 'trashcar-6', 'trashcar-7', 'trashcar-8', 'trashcar-9'],
+                layers: [
+                  'dogpoo',
+                  'cleanbox',
+                  'trashcar-1',
+                  'trashcar-2',
+                  'trashcar-3',
+                  'trashcar-4',
+                  'trashcar-5',
+                  'trashcar-6',
+                  'trashcar-7',
+                  'trashcar-8',
+                  'trashcar-9'
+                ]
               });
 
               if (features.length) {
@@ -495,7 +577,9 @@ export default defineComponent({
                   ? clickedFeature.geometry.coordinates
                   : null;
 
-                const titleKey = Object.keys(clickedFeature.properties).find(key => key.trim() === 'title');
+                const titleKey = Object.keys(clickedFeature.properties).find(
+                  (key) => key.trim() === 'title'
+                );
                 const title = clickedFeature.properties[titleKey];
 
                 if (clickedFeature.properties && title && coordinates) {
@@ -514,11 +598,31 @@ export default defineComponent({
               }
             });
 
+            mapInstance.value!.on('mousemove', (event) => {
+              const features = mapInstance.value!.queryRenderedFeatures(event.point, {
+                layers: [
+                  'dogpoo',
+                  'cleanbox',
+                  'trashcar-1',
+                  'trashcar-2',
+                  'trashcar-3',
+                  'trashcar-4',
+                  'trashcar-5',
+                  'trashcar-6',
+                  'trashcar-7',
+                  'trashcar-8',
+                  'trashcar-9'
+                ]
+              });
+
+              mapInstance.value!.getCanvas().style.cursor = features.length ? 'pointer' : '';
+            });
+
             mapInstance.value!.addSource('mapbox-dem', {
               type: 'raster-dem',
               url: 'mapbox://mapbox.terrain-rgb',
               tileSize: 512,
-              maxzoom: 14,
+              maxzoom: 14
             });
 
             if (navigator.geolocation) {
@@ -535,14 +639,16 @@ export default defineComponent({
               );
             }
 
-
             // 假設中心點塗層已存在，更新數據
             // 定時更新使用者位置
             setInterval(() => {
               if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                   (position) => {
-                    const coords: [number, number] = [position.coords.longitude, position.coords.latitude];
+                    const coords: [number, number] = [
+                      position.coords.longitude,
+                      position.coords.latitude
+                    ];
                     updateUserLocation(coords);
                   },
                   (error) => {
@@ -551,7 +657,6 @@ export default defineComponent({
                 );
               }
             }, 5000);
-
 
             mapInstance.value!.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
 
@@ -580,7 +685,7 @@ export default defineComponent({
                           15,
                           0,
                           16.05,
-                          ['get', 'height'],
+                          ['get', 'height']
                         ],
                         'fill-extrusion-base': [
                           'interpolate',
@@ -589,10 +694,10 @@ export default defineComponent({
                           15,
                           0,
                           16.05,
-                          ['get', 'min_height'],
+                          ['get', 'min_height']
                         ],
-                        'fill-extrusion-opacity': 0.6,
-                      },
+                        'fill-extrusion-opacity': 0.6
+                      }
                     },
                     labelLayerId
                   );
@@ -691,8 +796,7 @@ export default defineComponent({
 .slide-enter,
 .slide-leave-to
 
-/* .slide-leave-active in <2.1.8 */
-  {
+/* .slide-leave-active in <2.1.8 */ {
   transform: translateX(100%);
 }
 
@@ -713,5 +817,61 @@ export default defineComponent({
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.style1 {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.blue {
+  color: #5ab4c5;
+}
+
+.white {
+  color: white;
+}
+
+.custom-blue {
+  background-color: #5ab4c5; /* 自定義藍色背景 */
+}
+
+.custom-gray {
+  background-color: #d9d9d9; /* 自定義輝色背景 */
+}
+
+.custom-littleblue {
+  background-color: #0d1719; /* 自定義淺色背景 */
+}
+
+.custom-heavygray {
+  background-color: #1e1d1d62; /* 自定義輝色背景 */
+}
+
+.custom-dog {
+  background-color: #5e6a58; /* 自定義淺色背景 */
+}
+
+.custom-car {
+  background-color: #a77f48; /* 自定義淺色背景 */
+}
+
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: solid 5px rgb(132, 196, 230);
+  border-radius: 10px 10px 10px 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.list-other-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: solid 5px rgb(255, 255, 255);
+  border-radius: 10px 10px 10px 10px;
+  padding: 10px;
 }
 </style>
