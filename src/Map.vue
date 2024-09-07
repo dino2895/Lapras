@@ -9,6 +9,10 @@
             class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
             行人專用清潔箱
         </button>
+        <button @click="toggleAllTrashcarLayersVisibility"
+            class="bg-yellow-300 text-gray px-4 py-2 rounded hover:bg-yellow-500 transition">
+            垃圾車站點
+        </button>
     </div>
 </template>
 
@@ -31,6 +35,21 @@ export default defineComponent({
             dogpoo: true,
             cleanbox: true,
         });
+
+        //切換所有圖層
+        const toggleAllTrashcarLayersVisibility = () => {
+            if (!mapInstance.value) return;
+
+            const layers = mapInstance.value.getStyle().layers;
+
+            layers.forEach(layer => {
+                if (layer.id.startsWith('trashcar-')) {
+                    const currentVisibility = mapInstance.value.getLayoutProperty(layer.id, 'visibility');
+                    const newVisibility = currentVisibility === 'visible' ? 'none' : 'visible';
+                    mapInstance.value.setLayoutProperty(layer.id, 'visibility', newVisibility);
+                }
+            });
+        };
 
         // 切換圖層可見性
         const toggleLayerVisibility = (layerId: keyof typeof layersVisibility.value) => {
@@ -56,10 +75,9 @@ export default defineComponent({
         const drawRouteWithTrashcarData = async (layerName) => {
             if (!mapInstance.value) return;
 
-            const routeLayerId = 'route'; // 固定的图层 ID
+            const routeLayerId = 'route'; // 固定的ID
             const routeSourceId = 'route'; // 固定的 source ID
 
-            // 每次添加新的路径图层之前，移除现有的图层和源
             if (mapInstance.value.getLayer(routeLayerId)) {
                 mapInstance.value.removeLayer(routeLayerId);
             }
@@ -67,7 +85,6 @@ export default defineComponent({
                 mapInstance.value.removeSource(routeSourceId);
             }
 
-            // 抓取指定图层中的所有点
             const features = mapInstance.value.queryRenderedFeatures({
                 layers: [layerName],
             });
@@ -243,7 +260,7 @@ export default defineComponent({
 
                         mapInstance.value!.on('click', (event) => {
                             const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-                                layers: ['dogpoo', 'cleanbox', 'trashcar-1'],
+                                layers: ['dogpoo', 'cleanbox', 'trashcar-1', 'trashcar-2', 'trashcar-3', 'trashcar-4', 'trashcar-5', 'trashcar-6', 'trashcar-7', 'trashcar-8', 'trashcar-9'],
                             });
 
                             if (features.length) {
@@ -259,7 +276,7 @@ export default defineComponent({
                                 const title = clickedFeature.properties[titleKey];
                                 if (clickedFeature.properties && title && coordinates) {
                                     alert(
-                                        `You clicked on: ${title}\nCoordinates: [${coordinates[0]}, ${coordinates[1]}]`
+                                        `此地點位於: ${title}\nCoordinates: [${coordinates[0]}, ${coordinates[1]}]`
                                     );
                                 } else {
                                     console.log('No valid properties or coordinates found on clicked feature.');
@@ -272,7 +289,7 @@ export default defineComponent({
 
                         mapInstance.value!.on('mousemove', (event) => {
                             const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-                                layers: ['dogpoo', 'cleanbox', 'trashcar-1'],
+                                layers: ['dogpoo', 'cleanbox', 'trashcar-1', 'trashcar-2', 'trashcar-3', 'trashcar-4', 'trashcar-5', 'trashcar-6', 'trashcar-7', 'trashcar-8', 'trashcar-9'],
                             });
 
                             mapInstance.value!.getCanvas().style.cursor = features.length ? 'pointer' : '';
@@ -343,6 +360,7 @@ export default defineComponent({
 
         return {
             toggleLayerVisibility,
+            toggleAllTrashcarLayersVisibility,
         };
     },
 });
