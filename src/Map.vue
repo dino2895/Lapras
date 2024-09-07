@@ -168,14 +168,14 @@ export default defineComponent({
                     type: 'Feature',
                     geometry: {
                         type: 'Point',
-                        coordinates: [121.540592, 25.056111],  // 初始坐标
+                        coordinates: [121.540592, 25.056111],
                     },
                     properties: {
                         title: '所在地',
                     },
                 },
             ],
-        });
+        }); 
 
         const updateUserLocation = (coords: [number, number]) => {
             if (pointsJSON.value.features.length > 0) {
