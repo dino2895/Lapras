@@ -11,9 +11,10 @@
     </button>
     <button
       @click="resetCenter"
-      class="w-20 custom-gray text-white px-6 py-3 rounded-full shadow-lg hover:bg-white transition-all duration-300"
+      class="bg-white text-white w-12 h-12 rounded-full shadow-lg hover: custom-gray transition-all duration-300 ml-auto"
+      style="display: block"
     >
-      <img src="@/assets/images/gps.png" />
+      <img src="@/assets/images/gps.png" class="w-6 h-6 mx-auto" />
     </button>
   </div>
 
@@ -31,7 +32,7 @@
       <div class="list-container">
         <p style="padding: 5px;">點擊想要顯示的圖示</p>
         <button @click="toggleLayerVisibility('dogpoo')"
-          class="custom-blue text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transition-all duration-300">
+          class="custom-dog text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transition-all duration-300">
           狗便清潔箱
         </button>
         <button @click="toggleLayerVisibility('cleanbox')"
@@ -39,24 +40,24 @@
           行人專用清潔箱
         </button>
         <button @click="toggleAllTrashcarLayersVisibility"
-          class="custom-blue text-gray-800 w-full py-3 rounded-full shadow hover:bg-blue-300 transition-all duration-300">
+          class="custom-car text-white w-full py-3 rounded-full shadow hover:bg-blue-300 transition-all duration-300">
           垃圾車站點
         </button>
       </div>
       <div class="list-other-container">
         <button @click="resetCenter"
-          class="custom-blue text-white px-6 py-3 w-full rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
+          class="custom-heavygray text-white px-6 py-3 w-full rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
           回到目前定位
         </button>
         <button
           @click="toggleNavigation"
-          class="custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
+          class="custom-heavygray text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
         >
           導航模式
         </button>
         <button
           @click="toggleSidebar"
-          class="custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
+          class="custom-heavygray text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
         >
           鬧鐘列表
         </button>
@@ -400,7 +401,6 @@ export default defineComponent({
         mapInstance.value.setBearing(-17.6);
         mapInstance.value.setZoom(15.8); // 可根據需求調整縮放等級
       }
-      alert('回到定位');
     };
 
     // 切換導航模式
@@ -833,6 +833,18 @@ export default defineComponent({
   background-color: #0d1719; /* 自定義淺色背景 */
 }
 
+.custom-heavygray {
+  background-color: #1e1d1d62; /* 自定義輝色背景 */
+}
+
+.custom-dog {
+  background-color: #5e6a58; /* 自定義淺色背景 */
+}
+
+.custom-car {
+  background-color: #a77f48; /* 自定義淺色背景 */
+}
+
 .list-container {
   display: flex;
   flex-direction: column;
@@ -851,9 +863,4 @@ export default defineComponent({
   border-radius: 10px 10px 10px 10px;
   padding: 10px;
 }
-
-.aaa{
-  display: flex;
-  justify-content: flex-start;
-} 
 </style>
