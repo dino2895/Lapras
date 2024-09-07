@@ -80,8 +80,11 @@ const searchResultAgencyTypeSet = computed(
 const searchResultTitle = computed(() => searchResult.value?.map((item) => item.title));
 
 const onSearchClick = () => {
-  fetch(`https://lapras-backend-752705272074.asia-east1.run.app` + '/api/chat/text/send', {
+  fetch('https://lapras-backend-752705272074.asia-east1.run.app/api/chat/text/send', {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({ msg: chatMsgValue.value })
   })
     .then((res) => res.json())
