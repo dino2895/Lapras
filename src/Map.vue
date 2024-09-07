@@ -198,6 +198,8 @@ export default defineComponent({
                     mapInstance.value!.addImage('pointImg', image);
 
                     mapInstance.value!.on('load', () => {
+
+
                         mapInstance.value!.addLayer({
                             id: 'points',
                             type: 'symbol',
@@ -213,7 +215,7 @@ export default defineComponent({
 
                         mapInstance.value!.on('click', (event) => {
                             const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-                                layers: ['dogpoo', 'cleanbox'],
+                                layers: ['dogpoo', 'cleanbox','trashcar-1'],
                             });
 
                             if (features.length) {
@@ -239,9 +241,24 @@ export default defineComponent({
                             }
                         });
 
+                        mapInstance.value!.on('click', (event) => {
+                            const features = mapInstance.value!.queryRenderedFeatures(event.point);
+
+                            if (features.length > 0) {
+                                const clickedFeature = features[0];
+
+                                // 檢查圖層的名稱是否為 'trashcar-1' 且類型是否為 'circle'
+                                if (clickedFeature.layer.id === 'trashcar-1' && clickedFeature.layer.type === 'circle') {
+                                    // 不帶參數呼叫 drawRouteWithTrashcarData
+                                    drawRouteWithTrashcarData();
+                                }
+                            }
+                        });
+
+
                         mapInstance.value!.on('mousemove', (event) => {
                             const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-                                layers: ['dogpoo', 'cleanbox'],
+                                layers: ['dogpoo', 'cleanbox','trashcar-1'],
                             });
 
                             mapInstance.value!.getCanvas().style.cursor = features.length ? 'pointer' : '';
