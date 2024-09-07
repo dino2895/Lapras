@@ -5,13 +5,13 @@
   <div class="absolute top-4 right-4 z-10 flex flex-col space-y-4">
     <button
       @click="toggleMenu"
-      class="w-20 bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300"
+      class="w-20 custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
     >
       選單
     </button>
     <button
       @click="resetCenter"
-      class="w-20 bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300"
+      class="w-20 custom-gray text-white px-6 py-3 rounded-full shadow-lg hover:bg-white transition-all duration-300"
     >
       <img src="@/assets/images/gps.png" />
     </button>
@@ -29,40 +29,41 @@
       <h3 class="text-lg font-bold mb-4">選單</h3>
       <button
         @click="toggleLayerVisibility('dogpoo')"
-        class="bg-blue-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-600 transition-all duration-300"
+        class="custom-blue text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transition-all duration-300"
       >
         狗便清潔箱
       </button>
       <button
         @click="toggleLayerVisibility('cleanbox')"
-        class="bg-green-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-green-600 transition-all duration-300"
+        class="custom-blue text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transition-all duration-300"
       >
         行人專用清潔箱
       </button>
       <button
         @click="toggleAllTrashcarLayersVisibility"
-        class="bg-yellow-300 text-gray-800 w-full py-3 rounded-full shadow hover:bg-yellow-400 transition-all duration-300"
+        class="custom-blue text-white w-full py-3 rounded-full shadow hover:bg-blue-300 transition-all duration-300"
       >
         垃圾車站點
       </button>
       <button
         @click="resetCenter"
-        class="bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300"
+        class="custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
       >
         回到定位
       </button>
       <button
         @click="toggleNavigation"
-        class="bg-purple-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-purple-600 transition-all duration-300"
+        class="custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
       >
         導航模式
       </button>
       <button
         @click="toggleSidebar"
-        class="bg-green-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300"
+        class="custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
       >
         提醒
       </button>
+      
     </div>
   </transition>
 
@@ -149,14 +150,27 @@ export default defineComponent({
       if (!mapInstance.value) return;
 
       const layers = mapInstance.value.getStyle().layers;
+      let isVisible = false; // 用於追蹤新的可見性狀態
 
       layers.forEach((layer) => {
         if (layer.id.startsWith('trashcar-')) {
           const currentVisibility = mapInstance.value.getLayoutProperty(layer.id, 'visibility');
           const newVisibility = currentVisibility === 'visible' ? 'none' : 'visible';
           mapInstance.value.setLayoutProperty(layer.id, 'visibility', newVisibility);
+
+          // 更新 isVisible 變量
+          if (newVisibility === 'visible') {
+            isVisible = true;
+          }
         }
       });
+
+      // 根據新的可見性狀態顯示提示信息
+      if (isVisible) {
+        alert('垃圾車站點 顯示');
+      } else {
+        alert('垃圾車站點 隱藏');
+      }
     };
 
     // 切換圖層可見性
@@ -388,17 +402,20 @@ export default defineComponent({
         mapInstance.value.setBearing(-17.6);
         mapInstance.value.setZoom(15.8); // 可根據需求調整縮放等級
       }
+      alert('回到定位');
     };
 
     // 切換導航模式
     const toggleNavigation = () => {
       if (navigationEnabled.value && directionsControl.value) {
         // 停用導航
+        alert('關閉導航');
         mapInstance.value?.removeControl(directionsControl.value);
         navigationEnabled.value = false;
         resetCenter();
       } else {
         // 啟用導航
+        alert('啟用導航');
         if (!mapInstance.value) return;
 
         directionsControl.value = new MapboxDirections({
@@ -797,4 +814,39 @@ export default defineComponent({
   display: flex;
   justify-content: flex-start;
 }
+
+.blue {
+  color: #5ab4c5;
+}
+
+.white {
+  color: white;
+}
+
+.custom-blue {
+  background-color: #5ab4c5; /* 自定義藍色背景 */
+}
+
+.custom-gray {
+  background-color: #d9d9d9; /* 自定義輝色背景 */
+}
+
+.custom-littleblue {
+  background-color: #0d1719; /* 自定義淺色背景 */
+}
+
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: solid 5px rgb(145, 132, 230);
+  border-radius: 10px 10px 10px 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.aaa{
+  display: flex;
+  justify-content: flex-start;
+} 
 </style>
