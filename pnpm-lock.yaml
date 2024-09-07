@@ -20,6 +20,9 @@ importers:
       '@mapbox/mapbox-gl-directions':
         specifier: ^4.3.1
         version: 4.3.1(mapbox-gl@3.6.0)
+      '@mapbox/mapbox-gl-language':
+        specifier: ^1.0.1
+        version: 1.0.1(mapbox-gl@3.6.0)
       '@popperjs/core':
         specifier: 2.11.8
         version: 2.11.8
@@ -344,6 +347,11 @@ packages:
     resolution: {integrity: sha512-dWyKPBC+ZT3BV/+VYArMZVfKg5LY+YLLCb9P54INifacfkHUMzYgrWlSod/viGnuMz1wlLFitwAqipZE+m9uww==}
     peerDependencies:
       mapbox-gl: ^1 || ^2 || ^3
+
+  '@mapbox/mapbox-gl-language@1.0.1':
+    resolution: {integrity: sha512-gL58ojl7gaWLfbSISoB2QJEfTK3j+NKvPH9og0r+c3bd5BNqhY19Eb4OPfDc5+dGmjW03LhtZBc4n2b7Xn8kjA==}
+    peerDependencies:
+      mapbox-gl: '>=0.29.0'
 
   '@mapbox/mapbox-gl-supported@3.0.0':
     resolution: {integrity: sha512-2XghOwu16ZwPJLOFVuIOaLbN0iKMn867evzXFyf0P22dqugezfJwLmdanAgU25ITvz1TvOfVP4jsDImlDJzcWg==}
@@ -2160,6 +2168,10 @@ snapshots:
       redux-thunk: 2.4.2(redux@4.2.1)
       suggestions: 1.7.1
       turf-extent: 1.0.4
+
+  '@mapbox/mapbox-gl-language@1.0.1(mapbox-gl@3.6.0)':
+    dependencies:
+      mapbox-gl: 3.6.0
 
   '@mapbox/mapbox-gl-supported@3.0.0': {}
 
