@@ -1,12 +1,8 @@
-<<<<<<< HEAD
-![image](https://github.com/user-attachments/assets/b261d9a1-287f-4313-947a-6f91143be791)
-
-# TownPass-Services
-=======
 # Lapras-Services
->>>>>>> 85f2e9d8b70b870a92ca8e1d111068f063d30b24
 
-TownPass-Services project made with Vue3 in Vite.
+Lapras-Services project made with Vue3 in Vite.
+
+![image](https://github.com/user-attachments/assets/030f8e43-a60d-4999-9020-cf428c6b6391)
 
 ## Recommended IDE Setup
 
