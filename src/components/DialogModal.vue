@@ -6,8 +6,8 @@
       v-show="innerModelValue"
       @click="handleClickOutSide"
     >
-      <div class="header title">
-        <slot name="header" class="">垃圾類別為...</slot>
+      <div class="header">
+        <slot name="header">{{ title }}類別為...</slot>
       </div>
 
       <div class="body">
@@ -31,7 +31,8 @@ import { ref, computed, onMounted, watch } from 'vue';
 export default {
   props: {
     modelValue: Boolean,
-    content: String
+    content: String,
+    title: String
   },
   setup(props, ctx) {
     const modal = ref();
