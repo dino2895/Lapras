@@ -146,14 +146,27 @@ export default defineComponent({
       if (!mapInstance.value) return;
 
       const layers = mapInstance.value.getStyle().layers;
+      let isVisible = false; // 用於追蹤新的可見性狀態
 
       layers.forEach((layer) => {
         if (layer.id.startsWith('trashcar-')) {
           const currentVisibility = mapInstance.value.getLayoutProperty(layer.id, 'visibility');
           const newVisibility = currentVisibility === 'visible' ? 'none' : 'visible';
           mapInstance.value.setLayoutProperty(layer.id, 'visibility', newVisibility);
+
+          // 更新 isVisible 變量
+          if (newVisibility === 'visible') {
+            isVisible = true;
+          }
         }
       });
+
+      // 根據新的可見性狀態顯示提示信息
+      if (isVisible) {
+        alert('垃圾車站點 顯示');
+      } else {
+        alert('垃圾車站點 隱藏');
+      }
     };
 
     // 切換圖層可見性
@@ -385,17 +398,20 @@ export default defineComponent({
         mapInstance.value.setBearing(-17.6);
         mapInstance.value.setZoom(15.8); // 可根據需求調整縮放等級
       }
+      alert('回到定位');
     };
 
     // 切換導航模式
     const toggleNavigation = () => {
       if (navigationEnabled.value && directionsControl.value) {
         // 停用導航
+        alert('關閉導航');
         mapInstance.value?.removeControl(directionsControl.value);
         navigationEnabled.value = false;
         resetCenter();
       } else {
         // 啟用導航
+        alert('啟用導航');
         if (!mapInstance.value) return;
 
         directionsControl.value = new MapboxDirections({
