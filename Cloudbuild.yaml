@@ -1,0 +1,5 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'asia-east1-docker.pkg.dev/the-program-434809-a3/lapras', '.']
+options:
+  logging: CLOUD_LOGGING_ONLY
