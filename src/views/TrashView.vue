@@ -301,7 +301,7 @@ const uploadImage = async (formData) => {
   }
 };
 
-const selectedOption = ref('');
+const selectedOption = ref('model-taipei');
 const options = [
   { text: '台北垃圾分類模型', value: 'model-taipei' },
   { text: '台中垃圾分類模型', value: 'model-taichung' },
