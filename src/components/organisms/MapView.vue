@@ -1,35 +1,115 @@
 <template>
   <div class="w-full h-screen" id="map"></div>
-  <!-- 釘選按鈕 -->
+  <!-- 選單按鈕 -->
   <div class="absolute top-4 left-0 right-0 z-10 flex justify-center space-x-4">
     <button
-      @click="toggleLayerVisibility('dogpoo')"
+      @click="toggleMenu"
       class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
     >
-      狗便清潔箱
-    </button>
-    <button
-      @click="toggleLayerVisibility('cleanbox')"
-      class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
-    >
-      行人專用清潔箱
+      選單
     </button>
   </div>
+
+  <!-- 選單內容 -->
+  <transition name="slide">
+    <div v-show="showMenu" class="absolute top-12 left-0 right-0 bg-white shadow-lg z-20 p-4">
+      <button
+        @click="toggleLayerVisibility('dogpoo')"
+        class="block mb-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+      >
+        狗便清潔箱
+      </button>
+      <button
+        @click="toggleLayerVisibility('cleanbox')"
+        class="block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+      >
+        行人專用清潔箱
+      </button>
+      <button
+        @click="toggleAllTrashcarLayersVisibility"
+        class="block bg-yellow-500 text-gray px-4 py-2 rounded hover:bg-yellow-500 transition"
+      >
+        垃圾車站點
+      </button>
+    </div>
+  </transition>
+
+  <!-- 側邊欄 -->
+  <transition name="slide">
+    <div
+      v-show="showSidebar"
+      class="fixed top-0 right-0 bottom-0 bg-white w-80 p-4 shadow-lg z-20 transition-transform transform translate-x-0"
+    >
+      <button @click="toggleSidebar" class="absolute top-4 left-4 text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
+      </button>
+      <h2 class="text-lg font-bold mb-2">___提醒</h2>
+      <div class="mb-4">
+        <input
+          v-model.number="alarmMinutes"
+          type="number"
+          placeholder="設置鬧鐘分鐘"
+          class="border p-2 w-full mb-2"
+        />
+        <button
+          @click="setAlarm"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+        >
+          設定鬧鐘
+        </button>
+      </div>
+      <ul>
+        <li
+          v-for="(alarm, index) in alarms"
+          :key="index"
+          class="flex justify-between items-center mb-2"
+        >
+          <span>{{ alarm.minutes }} 分鐘</span>
+          <span>{{ alarm.timeRemaining }} 秒後響</span>
+          <button @click="removeAlarm(index)" class="text-red-500">刪除</button>
+        </li>
+      </ul>
+    </div>
+  </transition>
+
+  <!-- 鬧鐘訊息 -->
+  <div
+    v-if="alarmMessage"
+    class="absolute top-1/4 left-1/2 transform -translate-x-1/2 z-10 bg-red-500 text-white px-4 py-2 rounded"
+  >
+    {{ alarmMessage }}
+  </div>
+
+  <!-- 開關側邊欄按鈕 -->
+  <button
+    @click="toggleSidebar"
+    class="fixed top-4 right-4 z-20 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+  >
+    提醒
+  </button>
 </template>
+
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import MapboxLanguage from '@mapbox/mapbox-gl-language';
-import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
-import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
 import imagePath from '@/assets/images/geo-point.png';
 
 export default defineComponent({
   name: 'MapView',
   setup() {
     const mapInstance = ref<mapboxgl.Map | null>(null);
+    const showSidebar = ref(false); // 控制側邊欄顯示
+    const showMenu = ref(false); // 控制選單顯示
 
     // 圖層可見性狀態
     const layersVisibility = ref({
@@ -39,356 +119,199 @@ export default defineComponent({
 
     // 切換圖層可見性
     const toggleLayerVisibility = (layerId: keyof typeof layersVisibility.value) => {
-      try {
-        if (!mapInstance.value) throw new Error('Map instance is not initialized.');
-
-        const visibility = layersVisibility.value[layerId];
-        const newOpacity = visibility ? 0 : 1;
-
-        if (mapInstance.value.getLayer(layerId)) {
-          // 只適用circle類型圖層
-          mapInstance.value.setPaintProperty(layerId, 'circle-opacity', newOpacity);
-          layersVisibility.value[layerId] = !visibility;
-        } else {
-          console.error(`Layer ${layerId} does not exist.`);
-        }
-      } catch (error) {
-        console.error('An error occurred in toggleLayerVisibility:', error);
-      }
-    };
-
-    // // 從 trashcar-1 圖層中提取點並繪製路徑
-    // const drawRouteWithTrashcarData = () => {
-    //     if (!mapInstance.value) {
-    //         console.error('Map instance is not initialized.');
-    //         return;
-    //     }
-
-    //     const features = mapInstance.value.queryRenderedFeatures({
-    //         layers: ['trashcar-1'], // 指定 trashcar-1 圖層
-    //     });
-
-    //     if (features.length === 0) {
-    //         console.error('No features found in trashcar-1 layer.');
-    //         return;
-    //     }
-
-    //     // 提取 trashcar-1 圖層的所有坐標
-    //     const coordinates = features.map((feature) => {
-    //         return feature.geometry.coordinates;
-    //     });
-
-    //     if (coordinates.length === 0) {
-    //         console.error('No coordinates found in trashcar-1 features.');
-    //         return;
-    //     }
-
-    //     // 使用 Mapbox Directions API 繪製經過所有 trashcar-1 點的路徑
-    //     const directions = new MapboxDirections({
-    //         accessToken: mapboxgl.accessToken,
-    //         unit: 'metric',
-    //         profile: 'mapbox/driving', // 可以選擇 'mapbox/walking', 'mapbox/cycling', 'mapbox/driving'
-    //         interactive: false, // 禁止互動模式
-    //         controls: {
-    //             inputs: false, // 隱藏輸入框
-    //             instructions: true, // 顯示導航說明
-    //         },
-    //     });
-
-    //     mapInstance.value.addControl(directions, 'top-left');
-
-    //     // 設置起點
-    //     directions.setOrigin(coordinates[0]);
-
-    //     // 將剩下的坐標設為途徑點，最後一個點設為終點
-    //     for (let i = 1; i < coordinates.length - 1; i++) {
-    //         directions.addWaypoint(i - 1, coordinates[i]);
-    //     }
-
-    //     // 設置終點
-    //     directions.setDestination(coordinates[coordinates.length - 1]);
-    // };
-
-    // 繪製路徑的函數
-    const drawRouteWithTrashcarData = async () => {
-      // 確保地圖和 trashcar-1 圖層已經加載
       if (!mapInstance.value) return;
 
-      // 抓取 trashcar-1 圖層中的所有點
-      const features = mapInstance.value.queryRenderedFeatures({
-        layers: ['trashcar-1'] // 指定 trashcar-1 圖層
-      });
+      const visibility = layersVisibility.value[layerId];
+      const newOpacity = visibility ? 0 : 1;
 
-      if (features.length === 0) {
-        console.error('No features found in trashcar-1 layer.');
-        return;
+      if (mapInstance.value.getLayer(layerId)) {
+        mapInstance.value.setPaintProperty(layerId, 'circle-opacity', newOpacity);
+        layersVisibility.value[layerId] = !visibility;
       }
+    };
 
-      // 提取所有點的座標
-      const coordinates = features.map((feature) => feature.geometry.coordinates);
+    // 鬧鐘功能
+    const alarmMinutes = ref(0); // 設定鬧鐘分鐘
+    const alarmTimeout = ref<NodeJS.Timeout | null>(null); // 計時器
+    const alarmMessage = ref<string | null>(null); // 顯示鬧鐘訊息
+    const alarms = ref<
+      Array<{
+        minutes: number;
+        timeRemaining: number;
+        intervalId: NodeJS.Timeout | null;
+      }>
+    >([]); // 鬧鐘清單
 
-      if (coordinates.length < 2) {
-        console.error('Insufficient points to draw a route.');
-        return;
-      }
+    const setAlarm = () => {
+      if (alarmTimeout.value) clearTimeout(alarmTimeout.value);
 
-      try {
-        // 通過 Mapbox Directions API 獲取路徑
-        const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates
-          .map((coord) => coord.join(','))
-          .join(';')}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+      const timeInMs = alarmMinutes.value * 60 * 1000;
+      if (timeInMs > 0) {
+        alarmTimeout.value = setTimeout(() => {
+          alarmMessage.value = '垃圾車來囉！';
+          setTimeout(() => (alarmMessage.value = null), 5000); // 鬧鐘訊息顯示5秒
+        }, timeInMs);
 
-        const response = await fetch(directionsUrl);
-        const data = await response.json();
-
-        if (data.routes && data.routes.length > 0) {
-          const route = data.routes[0].geometry;
-
-          // 添加路徑到地圖
-          mapInstance.value.addLayer({
-            id: 'route',
-            type: 'line',
-            source: {
-              type: 'geojson',
-              data: {
-                type: 'Feature',
-                properties: {},
-                geometry: route
-              }
-            },
-            layout: {
-              'line-join': 'round',
-              'line-cap': 'round'
-            },
-            paint: {
-              'line-color': '#3b9ddd',
-              'line-width': 4
+        // 添加到鬧鐘清單並啟動倒數計時
+        const intervalId = setInterval(() => {
+          alarms.value = alarms.value.map((alarm) => {
+            if (alarm.timeRemaining > 0) {
+              return {
+                ...alarm,
+                timeRemaining: alarm.timeRemaining - 1
+              };
+            } else {
+              clearInterval(intervalId);
+              return alarm;
             }
           });
-        } else {
-          console.error('No route data found from Directions API.');
-        }
-      } catch (error) {
-        console.error('Error fetching route from Directions API:', error);
+        }, 1000);
+
+        alarms.value.push({
+          minutes: alarmMinutes.value,
+          timeRemaining: Math.floor(timeInMs / 1000),
+          intervalId
+        });
       }
     };
 
-    // GeoJSON 數據
-    interface GeoJSONFeature {
-      type: 'Feature';
-      geometry: {
-        type: 'Point';
-        coordinates: [number, number];
-      };
-      properties: {
-        title: string;
-      };
-    }
-
-    interface GeoJSONFeatureCollection {
-      type: 'FeatureCollection';
-      features: GeoJSONFeature[];
-    }
-
-    const pointsJSON: GeoJSONFeatureCollection = {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [121.540592, 25.056111] // 經度和緯度
-          },
-          properties: {
-            title: '所在地'
-          }
-        }
-      ]
+    const removeAlarm = (index: number) => {
+      const alarm = alarms.value[index];
+      if (alarm.intervalId) {
+        clearInterval(alarm.intervalId);
+      }
+      alarms.value.splice(index, 1);
     };
 
-    const updateUserLocation = (coords: [number, number]) => {
-      pointsJSON.features[0].geometry.coordinates = coords;
+    const toggleSidebar = () => {
+      showSidebar.value = !showSidebar.value;
+    };
 
-      const source = mapInstance.value?.getSource('points');
-
-      // 確認 source 是一個 GeoJSONSource
-      if (source && (source as mapboxgl.GeoJSONSource).setData) {
-        (source as mapboxgl.GeoJSONSource).setData(pointsJSON);
-      } else {
-        console.error("Source 'points' is not a GeoJSONSource or does not support setData.");
-      }
+    const toggleMenu = () => {
+      showMenu.value = !showMenu.value;
     };
 
     onMounted(() => {
+      // 設置 Mapbox 訪問權限
       mapboxgl.accessToken =
         'pk.eyJ1IjoicmljaDc0MjAiLCJhIjoiY20wa3B2ZnlxMWJraDJrb2I1a2I4ZzMwcSJ9.MQC2ef9isDmw5Uc37uiqeg'; // 替換成你的 Mapbox API 金鑰
-      var userCoords: [number, number] = [121.540592, 25.056111];
+      const userCoords: [number, number] = [121.540592, 25.056111]; // 初始座標
 
       // 獲取用戶位置
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            userCoords = [position.coords.longitude, position.coords.latitude];
-
-            // 更新地圖中心到用戶GPS位址
-            mapInstance.value!.setCenter(userCoords);
-
-            // 更新GeoJSON圖層數據
-            updateUserLocation(userCoords);
+            const newCoords: [number, number] = [
+              position.coords.longitude,
+              position.coords.latitude
+            ];
+            mapInstance.value!.setCenter(newCoords);
+            updateUserLocation(newCoords);
           },
-          (error) => {
-            console.error('Error getting user location:', error);
-          }
+          (error) => console.error('Error getting user location:', error)
         );
       } else {
         console.error('Geolocation is not supported by this browser.');
       }
 
+      // 初始化地圖
       mapInstance.value = new mapboxgl.Map({
-        container: 'map', // 對應上面的 id="map"
-        style: 'mapbox://styles/rich7420/cm0mii7r6002y01r3ao4pfbag', // 地圖樣式
-        center: userCoords, // 設定地圖中心 [經度, 緯度]
-        zoom: 12.5, // 設定初始縮放級別
-        pitch: 45, // 攝像機俯仰角度
-        bearing: -17.6 // 攝像機方向角度
+        container: 'map',
+        style: 'mapbox://styles/rich7420/cm0mii7r6002y01r3ao4pfbag',
+        center: userCoords,
+        zoom: 12.5,
+        pitch: 45,
+        bearing: -17.6
       });
 
-      // 添加中文語言支持
+      // 加入中文語言支持
       mapInstance.value.addControl(new MapboxLanguage({ defaultLanguage: 'zh-Hant' }));
 
-      // 加載圖片並添加到地圖上
+      // 加載圖像並將其添加到地圖
       mapInstance.value.loadImage(imagePath, (error, image) => {
-        if (error) {
+        if (error || !image) {
           console.error('圖片加載失敗:', error);
           return;
         }
 
-        if (image) {
-          console.log('圖片加載成功');
-          mapInstance.value!.addImage('pointImg', image);
+        mapInstance.value!.addImage('pointImg', image);
 
-          mapInstance.value!.on('load', () => {
-            // 添加 GeoJSON 圖層
-            mapInstance.value!.addLayer({
-              id: 'points',
-              type: 'symbol',
-              source: {
-                type: 'geojson',
-                data: pointsJSON
-              },
-              layout: {
-                'icon-image': 'pointImg',
-                'icon-size': 0.05
-              }
-            });
-
-            // 點擊事件處理
-            mapInstance.value!.on('click', (event) => {
-              drawRouteWithTrashcarData();
-
-              const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-                layers: ['dogpoo', 'cleanbox'] // 只查詢這兩個圖層
-              });
-
-              if (features.length) {
-                const clickedFeature = features[0];
-                const coordinates =
-                  clickedFeature.geometry?.type === 'Point'
-                    ? clickedFeature.geometry.coordinates
-                    : null;
-
-                if (clickedFeature.properties && clickedFeature.properties.title && coordinates) {
-                  alert(
-                    `You clicked on: ${clickedFeature.properties.title}\nCoordinates: [${coordinates[0]}, ${coordinates[1]}]`
-                  );
-                } else {
-                  console.log('No valid properties or coordinates found on clicked feature.');
-                }
-              } else {
-                console.log('No feature found at clicked location.');
-              }
-            });
-
-            // 改變游標形狀以提示用戶
-            mapInstance.value!.on('mousemove', (event) => {
-              const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-                layers: ['dogpoo', 'cleanbox']
-              });
-
-              mapInstance.value!.getCanvas().style.cursor = features.length ? 'pointer' : '';
-            });
-
-            // 添加地形
-            mapInstance.value!.addSource('mapbox-dem', {
-              type: 'raster-dem',
-              url: 'mapbox://mapbox.terrain-rgb',
-              tileSize: 512,
-              maxzoom: 14
-            });
-
-            mapInstance.value!.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
-
-            // 添加 3D 建築物
-            if (mapInstance.value) {
-              const style = mapInstance.value.getStyle();
-              if (style && style.layers) {
-                const labelLayerId = style.layers.find(
-                  (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
-                )?.id;
-
-                if (labelLayerId) {
-                  mapInstance.value.addLayer(
-                    {
-                      id: '3d-buildings',
-                      source: 'composite',
-                      'source-layer': 'building',
-                      filter: ['==', 'extrude', 'true'],
-                      type: 'fill-extrusion',
-                      minzoom: 15,
-                      paint: {
-                        'fill-extrusion-color': '#aaa',
-                        'fill-extrusion-height': [
-                          'interpolate',
-                          ['linear'],
-                          ['zoom'],
-                          15,
-                          0,
-                          16.05,
-                          ['get', 'height']
-                        ],
-                        'fill-extrusion-base': [
-                          'interpolate',
-                          ['linear'],
-                          ['zoom'],
-                          15,
-                          0,
-                          16.05,
-                          ['get', 'min_height']
-                        ],
-                        'fill-extrusion-opacity': 0.6
-                      }
+        mapInstance.value!.on('load', () => {
+          mapInstance.value!.addLayer({
+            id: 'points',
+            type: 'symbol',
+            source: {
+              type: 'geojson',
+              data: {
+                type: 'FeatureCollection',
+                features: [
+                  {
+                    type: 'Feature',
+                    geometry: {
+                      type: 'Point',
+                      coordinates: [121.540592, 25.056111]
                     },
-                    labelLayerId
-                  );
-                } else {
-                  console.error('No symbol layer with text-field found.');
-                }
-              } else {
-                console.error('No style or layers found in the map.');
+                    properties: {
+                      title: '所在地'
+                    }
+                  }
+                ]
               }
-            } else {
-              console.error('Map instance is not initialized.');
+            },
+            layout: {
+              'icon-image': 'pointImg',
+              'icon-size': 0.05
             }
-
-            console.log('Layers are loaded and 3D effects are added.');
           });
-        }
+        });
       });
     });
 
     return {
-      toggleLayerVisibility
+      toggleLayerVisibility,
+      alarmMinutes,
+      setAlarm,
+      alarmMessage,
+      alarms,
+      removeAlarm,
+      showSidebar,
+      toggleSidebar,
+      showMenu,
+      toggleMenu
     };
   }
 });
 </script>
+
+
+
+<style scoped>
+/* Define slide transition */
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease;
+}
+.slide-enter, .slide-leave-to /* .slide-leave-active in <2.1.8 */ {
+  transform: translateX(100%);
+}
+
+/* Style for menu */
+.absolute {
+  position: absolute;
+}
+
+.z-10 {
+  z-index: 10;
+}
+
+.bg-white {
+  background-color: white;
+}
+
+.shadow-lg {
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+</style>
+
