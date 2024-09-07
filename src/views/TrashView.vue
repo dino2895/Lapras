@@ -109,11 +109,16 @@ const onSearchClick = () => {
 const photo = ref(null); // 存儲照片的 Base64
 const stream = ref(null); // 存儲攝像頭的流
 const video = ref(null); // 引用 video 元素
+const isCamera = ref(false); // 是否啟動攝像頭
+const isFrontCamera = ref(true); // 記錄當前是否為前置攝像頭
 
 // 啟動攝像頭
-const startCamera = () => {
+const startCamera = (facingMode = 'user') => {
+  isCamera.value = !isCamera.value;
   navigator.mediaDevices
-    .getUserMedia({ video: true })
+    .getUserMedia({
+      video: { facingMode: facingMode } // 使用前置或後置攝像頭
+    })
     .then((mediaStream) => {
       stream.value = mediaStream;
       video.value.srcObject = mediaStream;
@@ -121,6 +126,27 @@ const startCamera = () => {
     .catch((err) => {
       console.error('攝像頭啟動失敗:', err);
     });
+};
+
+// 停止攝像頭流
+const stopCamera = () => {
+  isCamera.value = !isCamera.value;
+  if (stream.value) {
+    stream.value.getTracks().forEach((track) => {
+      track.stop();
+    });
+    stream.value = null; // 清除流
+  }
+};
+
+// 切換前置與後置攝像頭
+const switchCamera = () => {
+  isFrontCamera.value = !isFrontCamera.value; // 切換前後攝像頭狀態
+
+  stopCamera(); // 先停止當前攝像頭流
+
+  // 重新啟動攝像頭，根據 isFrontCamera 選擇前置或後置
+  startCamera(isFrontCamera.value ? 'user' : { exact: 'environment' });
 };
 
 // 拍照功能
@@ -133,20 +159,23 @@ const capturePhoto = () => {
 
   // 將照片轉換為 base64 編碼
   photo.value = canvas.toDataURL('image/png');
-};
 
-// 在組件掛載時啟動攝像頭
-onMounted(() => {
-  startCamera();
-});
+  fetch('https://lapras-backend-752705272074.asia-east1.run.app/api/chat/photo/upload', {
+    method: 'POST'
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      // searchResult.value = data;
+      showDialog.value = !showDialog.value;
+      dialogContent.value = data;
+    });
+
+  stopCamera();
+};
 
 // 在組件卸載前停止攝像頭流
 onBeforeUnmount(() => {
-  if (stream.value) {
-    stream.value.getTracks().forEach((track) => {
-      track.stop();
-    });
-  }
+  stopCamera();
 });
 
 const activeSituation = ref('apply');
@@ -191,15 +220,22 @@ const activeRecord = computed(() =>
             <div
               class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center"
               style="background-color: #5ab4c5"
-              @click="capturePhoto"
+              @click="startCamera"
             >
               <i class="fa-solid fa-camera-retro text-8xl text-white py-4"></i>
               <p class="text-white text-center">拍攝想要詢問的垃圾~</p>
             </div>
           </div>
-          <div class="camera">
-            <video ref="video" width="640" height="480" autoplay></video>
-            <button @click="capturePhoto" class="bg-black text-white">拍照</button>
+          <div v-if="isCamera" class="camera flex flex-col items-center justify-center">
+            <video ref="video" width="400" height="240" class="rounded-t-lg" autoplay></video>
+            <div class="rounded-b-lg flex bg-black justify-center" style="width: 400px">
+              <button @click="capturePhoto" class="text-white rounded-full p-2 m-1">
+                <i class="fa-solid fa-camera text-2xl"></i>
+              </button>
+              <button @click="switchCamera" class="text-white rounded-full p-2 m-1">
+                <i class="fa-solid fa-arrows-rotate text-2xl"></i>
+              </button>
+            </div>
           </div>
           <DialogModalVue v-model="showDialog" :content="dialogContent"></DialogModalVue>
           <!-- <p class="text-grey-500 mt-4 mb-2 px-4">請選擇要申請的項目</p>
