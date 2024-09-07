@@ -337,7 +337,7 @@ export default defineComponent({
         mapInstance.value.setCenter(pointsJSON.value.features[0].geometry.coordinates);
         mapInstance.value.setPitch(45);
         mapInstance.value.setBearing(-17.6);
-        mapInstance.value.setZoom(17); // 可根據需求調整縮放等級
+        mapInstance.value.setZoom(15.8); // 可根據需求調整縮放等級
       }
     };
 
@@ -419,7 +419,7 @@ export default defineComponent({
         container: 'map',
         style: 'mapbox://styles/rich7420/cm0mii7r6002y01r3ao4pfbag',
         center: userCoords,
-        zoom: 17,
+        zoom: 15.8,
         pitch: 45,
         bearing: -17.6
       });
