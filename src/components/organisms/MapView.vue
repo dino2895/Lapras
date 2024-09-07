@@ -11,9 +11,10 @@
     </button>
     <button
       @click="resetCenter"
-      class="w-20 custom-gray text-white px-6 py-3 rounded-full shadow-lg hover:bg-white transition-all duration-300"
+      class="bg-white text-white w-12 h-12 rounded-full shadow-lg hover: custom-gray transition-all duration-300 ml-auto"
+      style="display: block"
     >
-      <img src="@/assets/images/gps.png" />
+      <img src="@/assets/images/gps.png" class="w-6 h-6 mx-auto" />
     </button>
   </div>
 
