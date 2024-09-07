@@ -16,6 +16,10 @@
         <button @click="resetCenter" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
             回到定位
         </button>
+        <button @click="toggleNavigation"
+            class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition">
+            導航模式
+        </button>
     </div>
 </template>
 
@@ -32,6 +36,9 @@ export default defineComponent({
     name: 'MapView',
     setup() {
         const mapInstance = ref<mapboxgl.Map | null>(null);
+        const directionsControl = ref<MapboxDirections | null>(null);
+        const navigationEnabled = ref(false); // 導航功能的開關
+        const destinationCoords = ref<[number, number] | null>(null);
 
         // 圖層可見性狀態
         const layersVisibility = ref({
@@ -211,7 +218,61 @@ export default defineComponent({
         const resetCenter = () => {
             if (mapInstance.value && pointsJSON.value.features[0].geometry.coordinates) {
                 mapInstance.value.setCenter(pointsJSON.value.features[0].geometry.coordinates);
+                mapInstance.value.setPitch(45);
+                mapInstance.value.setBearing(-17.6);
                 mapInstance.value.setZoom(17); // 可根據需求調整縮放等級
+            }
+        };
+
+        // 切換導航模式
+        const toggleNavigation = () => {
+            if (navigationEnabled.value && directionsControl.value) {
+                // 停用導航
+                mapInstance.value?.removeControl(directionsControl.value);
+                navigationEnabled.value = false;
+                resetCenter();
+            } else {
+                // 啟用導航
+                if (!mapInstance.value) return;
+
+                directionsControl.value = new MapboxDirections({
+                    accessToken: mapboxgl.accessToken,
+                    unit: 'metric',
+                    profile: 'mapbox/driving',
+                });
+                mapInstance.value.addControl(directionsControl.value, 'top-left');
+                navigationEnabled.value = true;
+            }
+        };
+
+        const navigateToCircleLayer = () => {
+            if (mapInstance.value && destinationCoords.value && navigationEnabled.value && directionsControl.value) {
+                // 設置導航起點和終點
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const userCoords: [number, number] = [position.coords.longitude, position.coords.latitude];
+
+                    directionsControl.value!.setOrigin(userCoords); // 設置起點為當前位置
+                    directionsControl.value!.setDestination(destinationCoords.value); // 設置終點為點擊的圓圈層位置
+                }, (error) => {
+                    console.error('Error getting user location:', error);
+                });
+            }
+        };
+
+        // 點擊圓圈圖層，設置導航終點
+        const handleCircleClick = (event: mapboxgl.MapMouseEvent) => {
+            const features = mapInstance.value!.queryRenderedFeatures(event.point, {
+                layers: ['dogpoo', 'cleanbox', 'trashcar-1', 'trashcar-2', 'trashcar-3', 'trashcar-4', 'trashcar-5', 'trashcar-6', 'trashcar-7', 'trashcar-8', 'trashcar-9'], // 指定圓圈圖層名稱
+            });
+
+            if (features.length > 0) {
+                const clickedFeature = features[0];
+                destinationCoords.value = clickedFeature.geometry.coordinates;
+
+                // 啟動導航
+                if (navigationEnabled.value) {
+                    navigateToCircleLayer();
+                }
             }
         };
 
@@ -243,6 +304,9 @@ export default defineComponent({
                 pitch: 45,
                 bearing: -17.6,
             });
+
+            // 監聽點擊事件
+            mapInstance.value!.on('click', handleCircleClick);
 
             mapInstance.value.addControl(new MapboxLanguage({ defaultLanguage: 'zh-Hant' }));
 
@@ -334,7 +398,7 @@ export default defineComponent({
 
                         if (navigator.geolocation) {
                             navigator.geolocation.getCurrentPosition(
-                                (position) => {
+                                () => {
                                     if (mapInstance.value) {
                                         // 使用 pointsJSON 裡的座標來設置中心點
                                         mapInstance.value.setCenter(pointsJSON.value.features[0].geometry.coordinates);
@@ -345,6 +409,7 @@ export default defineComponent({
                                 }
                             );
                         }
+
 
                         // 假設中心點塗層已存在，更新數據
                         // 定時更新使用者位置
@@ -424,7 +489,51 @@ export default defineComponent({
             toggleLayerVisibility,
             toggleAllTrashcarLayersVisibility,
             resetCenter,
+            toggleNavigation,
         };
     },
 });
 </script>
+
+<style lang="css">
+.mapboxgl-ctrl-directions {
+    max-width: 12rem;
+    width: 100%;
+    padding: 0.75rem; 
+    background-color: white;
+    border-radius: 0.375rem;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+.mapboxgl-ctrl-directions .mapbox-directions-origin,
+.mapboxgl-ctrl-directions .mapbox-directions-destination {
+    display: none !important;
+    background-color: #f7fafc;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    padding: 0.4rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.mapboxgl-ctrl-directions .directions-icon-reverse {
+    display: none !important;
+}
+
+.mapboxgl-ctrl-directions .mapbox-directions-profile {
+    display: flex !important;
+    pointer-events: auto;
+    background-color: #ebf8ff;
+    color: #3182ce;
+    font-weight: 600;
+    padding: 0.4rem 0.75rem; 
+    border-radius: 0.25rem; 
+}
+
+.mapboxgl-ctrl-directions .mapbox-directions-route-summary {
+    background-color: #cfe0ff;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    color: #2a4365;
+}
+
+</style>
