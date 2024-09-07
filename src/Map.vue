@@ -53,16 +53,27 @@ export default defineComponent({
         };
 
         // 繪製路徑的函數
-        const drawRouteWithTrashcarData = async () => {
+        const drawRouteWithTrashcarData = async (layerName) => {
             if (!mapInstance.value) return;
 
-            // 抓取 trashcar-1 圖層中的所有點
+            const routeLayerId = 'route'; // 固定的图层 ID
+            const routeSourceId = 'route'; // 固定的 source ID
+
+            // 每次添加新的路径图层之前，移除现有的图层和源
+            if (mapInstance.value.getLayer(routeLayerId)) {
+                mapInstance.value.removeLayer(routeLayerId);
+            }
+            if (mapInstance.value.getSource(routeSourceId)) {
+                mapInstance.value.removeSource(routeSourceId);
+            }
+
+            // 抓取指定图层中的所有点
             const features = mapInstance.value.queryRenderedFeatures({
-                layers: ['trashcar-1'],
+                layers: [layerName],
             });
 
             if (features.length === 0) {
-                console.error('No features found in trashcar-1 layer.');
+                console.error(`No features found in ${layerName} layer.`);
                 return;
             }
 
@@ -84,17 +95,20 @@ export default defineComponent({
                 if (data.routes && data.routes.length > 0) {
                     const route = data.routes[0].geometry;
 
-                    mapInstance.value.addLayer({
-                        id: 'route',
-                        type: 'line',
-                        source: {
-                            type: 'geojson',
-                            data: {
-                                type: 'Feature',
-                                properties: {},
-                                geometry: route,
-                            },
+                    // 添加新的 source 和 layer，确保 source 和 layer 的 ID 是固定的
+                    mapInstance.value.addSource(routeSourceId, {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            properties: {},
+                            geometry: route,
                         },
+                    });
+
+                    mapInstance.value.addLayer({
+                        id: routeLayerId, // 固定的ID
+                        type: 'line',
+                        source: routeSourceId, // 使用固定的 source ID
                         layout: {
                             'line-join': 'round',
                             'line-cap': 'round',
@@ -300,18 +314,18 @@ export default defineComponent({
 
                             if (features.length > 0) {
                                 const clickedFeature = features[0];
+                                const layerId = clickedFeature.layer.id;
 
-                                // 檢查圖層的名稱是否為 'trashcar-1' 且類型是否為 'circle'
-                                if (clickedFeature.layer.id === 'trashcar-1' && clickedFeature.layer.type === 'circle') {
-                                    // 不帶參數呼叫 drawRouteWithTrashcarData
-                                    drawRouteWithTrashcarData();
+                                if (layerId.startsWith('trashcar-') && clickedFeature.layer.type === 'circle') {
+                                    drawRouteWithTrashcarData(layerId);
                                 }
                             }
                         });
 
+
                         mapInstance.value!.on('click', (event) => {
                             const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-                                layers: ['dogpoo', 'cleanbox','trashcar-1'],
+                                layers: ['dogpoo', 'cleanbox', 'trashcar-1'],
                             });
 
                             if (features.length) {
@@ -340,7 +354,7 @@ export default defineComponent({
 
                         mapInstance.value!.on('mousemove', (event) => {
                             const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-                                layers: ['dogpoo', 'cleanbox','trashcar-1'],
+                                layers: ['dogpoo', 'cleanbox', 'trashcar-1'],
                             });
 
                             mapInstance.value!.getCanvas().style.cursor = features.length ? 'pointer' : '';
