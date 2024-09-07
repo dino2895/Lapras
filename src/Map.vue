@@ -13,6 +13,9 @@
             class="bg-yellow-300 text-gray px-4 py-2 rounded hover:bg-yellow-500 transition">
             垃圾車站點
         </button>
+        <button @click="resetCenter" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+            回到定位
+        </button>
     </div>
 </template>
 
@@ -24,7 +27,6 @@ import MapboxLanguage from '@mapbox/mapbox-gl-language';
 import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
 import imagePath from '@/assets/images/geo-point.png';
-import { Target } from 'lucide-react';
 
 export default defineComponent({
     name: 'MapView',
@@ -175,7 +177,7 @@ export default defineComponent({
                     },
                 },
             ],
-        }); 
+        });
 
         const updateUserLocation = (coords: [number, number]) => {
             if (pointsJSON.value.features.length > 0) {
@@ -204,6 +206,14 @@ export default defineComponent({
 
         //     return [newLongitude, newLatitude];
         // };
+
+        //設中心點
+        const resetCenter = () => {
+            if (mapInstance.value && pointsJSON.value.features[0].geometry.coordinates) {
+                mapInstance.value.setCenter(pointsJSON.value.features[0].geometry.coordinates);
+                mapInstance.value.setZoom(17); // 可根據需求調整縮放等級
+            }
+        };
 
         onMounted(() => {
             mapboxgl.accessToken =
@@ -322,6 +332,20 @@ export default defineComponent({
                             maxzoom: 14,
                         });
 
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                                (position) => {
+                                    if (mapInstance.value) {
+                                        // 使用 pointsJSON 裡的座標來設置中心點
+                                        mapInstance.value.setCenter(pointsJSON.value.features[0].geometry.coordinates);
+                                    }
+                                },
+                                (error) => {
+                                    console.error('Error getting user location:', error);
+                                }
+                            );
+                        }
+
                         // 假設中心點塗層已存在，更新數據
                         // 定時更新使用者位置
                         setInterval(() => {
@@ -399,6 +423,7 @@ export default defineComponent({
         return {
             toggleLayerVisibility,
             toggleAllTrashcarLayersVisibility,
+            resetCenter,
         };
     },
 });
