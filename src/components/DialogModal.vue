@@ -6,20 +6,62 @@
       v-show="innerModelValue"
       @click="handleClickOutSide"
     >
-      <div class="header">
-        <slot name="header">{{ title }}類別為...</slot>
-      </div>
-
-      <div class="body">
-        <slot>
-            {{ content }}
-        </slot>
-      </div>
-
       <div class="footer">
         <slot>
           <button class="btn btn_border" @click="innerModelValue = false">CLOSE</button>
         </slot>
+      </div>
+      <div v-if="type === ''">
+        <div class="header">
+          <slot name="header">{{ title }}</slot>
+        </div>
+
+        <div class="body">
+          <slot> 類別：{{ content }} </slot>
+        </div>
+
+        <hr style="border: 2px solid black; margin: 10px 0;" />
+
+        <p style="margin: 5px 0 10px 0">
+          <strong>回收日期：</strong>{{ recyclingDate.join('、') }}
+        </p>
+        <ul style="margin: 10px 20px">
+          <li v-for="item in contentFilteredItems" :key="item.name">
+            <h3>
+              <strong>{{ item.name }}</strong> : {{ item.replace }}
+            </h3>
+          </li>
+        </ul>
+      </div>
+      <div v-if="type != ''">
+        <div class="header">
+          <slot name="header">{{ type }}</slot>
+        </div>
+
+        <div class="body">
+          <!-- 顯示回收日期 -->
+          <p style="margin: 5px 0 10px 0">
+            <strong>回收日期：</strong>{{ recyclingDates.join('、') }}
+          </p>
+          <hr style="border: 2px solid black" />
+          <h2
+            style="
+              font-weight: bold;
+              text-transform: uppercase;
+              font-size: 20px;
+              margin: 10px 0 15px 0;
+            "
+          >
+            回收物項目列表
+          </h2>
+          <ul style="margin: 10px 20px">
+            <li v-for="item in filteredItems" :key="item.name">
+              <h3>
+                <strong>{{ item.name }}</strong> : {{ item.replace }}
+              </h3>
+            </li>
+          </ul>
+        </div>
       </div>
     </dialog>
   </transition>
@@ -27,12 +69,14 @@
 
 <script>
 import { ref, computed, onMounted, watch } from 'vue';
+import trashData from '../lib/trash.json';
 
 export default {
   props: {
     modelValue: Boolean,
     content: String,
-    title: String
+    title: String,
+    type: String // 用來篩選的類型
   },
   setup(props, ctx) {
     const modal = ref();
@@ -59,6 +103,29 @@ export default {
       if (isOpen) displayModal(true);
     });
 
+    // 當 type 為空時，根據 content 進行篩選
+    const contentFilteredItems = computed(() => {
+      const category = trashData.categories.find((category) => category.type === props.content);
+      return category ? category.items : [];
+    });
+
+    const recyclingDate = computed(() => {
+      const category = trashData.categories.find((category) => category.type === props.content);
+      return category ? category.recycling_dates : [];
+    });
+
+    // 篩選對應的項目資料
+    const filteredItems = computed(() => {
+      const category = trashData.categories.find((category) => category.type === props.type);
+      return category ? category.items : [];
+    });
+
+    // 篩選對應的回收日期
+    const recyclingDates = computed(() => {
+      const category = trashData.categories.find((category) => category.type === props.type);
+      return category ? category.recycling_dates : [];
+    });
+
     const afterLeave = () => displayModal(false);
 
     const handleClickOutSide = ({ clientX: x, clientY: y }) => {
@@ -73,13 +140,31 @@ export default {
       afterLeave,
       displayModal,
       innerModelValue,
-      handleClickOutSide
+      handleClickOutSide,
+      filteredItems, // 回收項目
+      recyclingDates, // 回收日期
+      contentFilteredItems, // 根據 content 篩選的項目
+      recyclingDate // 根據 content 篩選的回收日期
     };
   }
 };
 </script>
 
 <style scoped>
+ul {
+  list-style-position: inside;
+  padding-left: 0; /* 去除左邊預設的內距 */
+}
+
+li {
+  list-style: disc;
+  margin: 10px 0;
+}
+
+h3 {
+  display: inline;
+}
+
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
@@ -111,19 +196,21 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: 100%;
+  width: 90%;
   height: 400px;
   margin: auto;
   max-width: 800px;
   border-radius: 10px;
   padding: 20px;
-  background-color: antiquewhite;
+  background-color: #f8e3bc;
   border: none;
 }
 
 .header {
   font-weight: bold;
   text-transform: uppercase;
+  font-size: 20px;
+  margin: 5px 0 15px 0;
 }
 
 .body {
@@ -131,9 +218,9 @@ export default {
 }
 
 .footer {
-  margin-top: auto;
-  display: flex;
-  justify-content: flex-end;
+  position: absolute;
+  top: 20px;
+  right: 20px;
 }
 
 .btn {
@@ -146,22 +233,28 @@ export default {
   padding: 6px;
 }
 
-btn:hover{
+.btn:hover{
   background-color: rgb(0, 0, 0);
   color: rgb(242, 235, 193);
 }
 
 .title {
   font-size: 24px;
-  
 }
 
-.btn_border{
-  border: solid 3px rgb(115, 115, 118);
+.btn_border {
+  color: #f5ba4b;
+  font-weight: bold;
+  border: solid 3px #f5ba4b;
   border-radius: 10px 10px 10px 10px;
-  background-color: rgb(242, 235, 193);
+  /* background-color: #f0c87c; */
   padding-left: 10px;
   padding-right: 10px;
 }
 
+.btn_border:hover {
+  background-color: #f5ba4b;
+  color: #f8e3bc;
+}
 </style>
+

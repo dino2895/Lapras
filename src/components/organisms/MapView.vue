@@ -63,6 +63,7 @@
       >
         提醒
       </button>
+      
     </div>
   </transition>
 
@@ -833,4 +834,19 @@ export default defineComponent({
 .custom-littleblue {
   background-color: #0d1719; /* 自定義淺色背景 */
 }
+
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: solid 5px rgb(145, 132, 230);
+  border-radius: 10px 10px 10px 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.aaa{
+  display: flex;
+  justify-content: flex-start;
+} 
 </style>
