@@ -16,7 +16,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
 import mapboxgl from 'mapbox-gl';
-import '/mapbox-gl/dist/mapbox-gl.css';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import MapboxLanguage from '@mapbox/mapbox-gl-language';
 import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
