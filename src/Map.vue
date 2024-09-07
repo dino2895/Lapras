@@ -24,6 +24,7 @@ import MapboxLanguage from '@mapbox/mapbox-gl-language';
 import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
 import imagePath from '@/assets/images/geo-point.png';
+import { Target } from 'lucide-react';
 
 export default defineComponent({
     name: 'MapView',
@@ -160,33 +161,49 @@ export default defineComponent({
             features: GeoJSONFeature[];
         }
 
-        const pointsJSON: GeoJSONFeatureCollection = {
+        const pointsJSON = ref<GeoJSONFeatureCollection>({
             type: 'FeatureCollection',
             features: [
                 {
                     type: 'Feature',
                     geometry: {
                         type: 'Point',
-                        coordinates: [121.540592, 25.056111],
+                        coordinates: [121.540592, 25.056111],  // 初始坐标
                     },
                     properties: {
                         title: '所在地',
                     },
                 },
             ],
-        };
+        });
 
         const updateUserLocation = (coords: [number, number]) => {
-            pointsJSON.features[0].geometry.coordinates = coords;
+            if (pointsJSON.value.features.length > 0) {
+                pointsJSON.value.features[0].geometry.coordinates = coords;
 
-            const source = mapInstance.value?.getSource('Points');
-
-            if (source && (source as mapboxgl.GeoJSONSource).setData) {
-                (source as mapboxgl.GeoJSONSource).setData(pointsJSON);
+                const source = mapInstance.value?.getSource('points');
+                if (source && (source as mapboxgl.GeoJSONSource).setData) {
+                    (source as mapboxgl.GeoJSONSource).setData(pointsJSON.value);
+                } else {
+                    console.error("Source 'points' is not a GeoJSONSource or does not support setData.");
+                }
+                console.log(pointsJSON.value.features[0].geometry.coordinates)
             } else {
-                console.error("Source 'points' is not a GeoJSONSource or does not support setData.");
+                console.error('pointsJSON features array is empty or undefined.');
             }
         };
+
+        //地圖假資料
+        // const generateRandomCoords = (): [number, number] => {
+        //     const baseLongitude = 121.540592;
+        //     const baseLatitude = 25.056111;
+
+        //     const randomOffset = () => (Math.random() - 0.5) * 0.001; // 隨機產生微小變化
+        //     const newLongitude = baseLongitude + randomOffset();
+        //     const newLatitude = baseLatitude + randomOffset();
+
+        //     return [newLongitude, newLatitude];
+        // };
 
         onMounted(() => {
             mapboxgl.accessToken =
@@ -231,13 +248,17 @@ export default defineComponent({
                     mapInstance.value!.on('load', () => {
 
 
+                        // 添加 GeoJSON source
+                        mapInstance.value!.addSource('points', {
+                            type: 'geojson',
+                            data: pointsJSON.value,  // 使用初始的 GeoJSON 數據
+                        });
+
+                        // 添加圖層
                         mapInstance.value!.addLayer({
                             id: 'points',
                             type: 'symbol',
-                            source: {
-                                type: 'geojson',
-                                data: pointsJSON,
-                            },
+                            source: 'points',
                             layout: {
                                 'icon-image': 'pointImg',
                                 'icon-size': 0.05,
@@ -300,6 +321,23 @@ export default defineComponent({
                             tileSize: 512,
                             maxzoom: 14,
                         });
+
+                        // 假設中心點塗層已存在，更新數據
+                        // 定時更新使用者位置
+                        setInterval(() => {
+                            if (navigator.geolocation) {
+                                navigator.geolocation.getCurrentPosition(
+                                    (position) => {
+                                        const coords: [number, number] = [position.coords.longitude, position.coords.latitude];
+                                        updateUserLocation(coords);
+                                    },
+                                    (error) => {
+                                        console.error('Error getting location:', error);
+                                    }
+                                );
+                            }
+                        }, 5000);
+
 
                         mapInstance.value!.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
 
