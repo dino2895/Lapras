@@ -39,9 +39,6 @@ if (route.query.isSearch) {
   activeTab.value = 1;
 }
 
-/**
- * tab0 JS start
- */
 const searchValue = ref('');
 const serviceList = ref(serviceListJson);
 const isSearch = ref(false);
@@ -94,13 +91,7 @@ const onSearchClick = () => {
     isSearch.value = false;
   }
 };
-/**
- * tab0 JS end
- */
 
-/**
- * tab1 JS start
- */
 const activeSituation = ref('apply');
 
 const caseProgress = ref(caseProgressJson);
@@ -126,7 +117,7 @@ const activeRecord = computed(() =>
       <template #tab0>
         <div class="py-4">
           <section class="flex items-center px-4">
-            <BaseInput v-model="searchValue" placeholder="您遇到哪些問題?" class="flex-grow" />
+            <BaseInput v-model="searchValue" placeholder="您要丟的垃圾？" class="flex-grow" />
             <button class="search-button" @click="onSearchClick">
               <img src="@/assets/images/search-icon.svg" alt="搜尋" />
             </button>
