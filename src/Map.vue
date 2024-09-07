@@ -1,6 +1,5 @@
 <template>
     <div class="relative w-full h-screen" id="map"></div>
-    <!-- 釘選按鈕 -->
     <div class="absolute top-4 left-0 right-0 z-10 flex justify-center space-x-4">
         <button @click="toggleLayerVisibility('dogpoo')"
             class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
@@ -53,66 +52,13 @@ export default defineComponent({
             }
         };
 
-        // // 從 trashcar-1 圖層中提取點並繪製路徑
-        // const drawRouteWithTrashcarData = () => {
-        //     if (!mapInstance.value) {
-        //         console.error('Map instance is not initialized.');
-        //         return;
-        //     }
-
-        //     const features = mapInstance.value.queryRenderedFeatures({
-        //         layers: ['trashcar-1'], // 指定 trashcar-1 圖層
-        //     });
-
-        //     if (features.length === 0) {
-        //         console.error('No features found in trashcar-1 layer.');
-        //         return;
-        //     }
-
-        //     // 提取 trashcar-1 圖層的所有坐標
-        //     const coordinates = features.map((feature) => {
-        //         return feature.geometry.coordinates;
-        //     });
-
-        //     if (coordinates.length === 0) {
-        //         console.error('No coordinates found in trashcar-1 features.');
-        //         return;
-        //     }
-
-        //     // 使用 Mapbox Directions API 繪製經過所有 trashcar-1 點的路徑
-        //     const directions = new MapboxDirections({
-        //         accessToken: mapboxgl.accessToken,
-        //         unit: 'metric',
-        //         profile: 'mapbox/driving', // 可以選擇 'mapbox/walking', 'mapbox/cycling', 'mapbox/driving'
-        //         interactive: false, // 禁止互動模式
-        //         controls: {
-        //             inputs: false, // 隱藏輸入框
-        //             instructions: true, // 顯示導航說明
-        //         },
-        //     });
-
-        //     mapInstance.value.addControl(directions, 'top-left');
-
-        //     // 設置起點
-        //     directions.setOrigin(coordinates[0]);
-
-        //     // 將剩下的坐標設為途徑點，最後一個點設為終點
-        //     for (let i = 1; i < coordinates.length - 1; i++) {
-        //         directions.addWaypoint(i - 1, coordinates[i]);
-        //     }
-
-        //     // 設置終點
-        //     directions.setDestination(coordinates[coordinates.length - 1]);
-        // };
-
         // 繪製路徑的函數
         const drawRouteWithTrashcarData = async () => {
-            // 確保地圖和 trashcar-1 圖層已經加載
             if (!mapInstance.value) return;
 
             // 抓取 trashcar-1 圖層中的所有點
             const features = mapInstance.value.queryRenderedFeatures({
-                layers: ['trashcar-1'], // 指定 trashcar-1 圖層
+                layers: ['trashcar-1'],
             });
 
             if (features.length === 0) {
@@ -120,7 +66,6 @@ export default defineComponent({
                 return;
             }
 
-            // 提取所有點的座標
             const coordinates = features.map((feature) => feature.geometry.coordinates);
 
             if (coordinates.length < 2) {
@@ -129,7 +74,6 @@ export default defineComponent({
             }
 
             try {
-                // 通過 Mapbox Directions API 獲取路徑
                 const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates
                     .map((coord) => coord.join(','))
                     .join(';')}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
@@ -140,7 +84,6 @@ export default defineComponent({
                 if (data.routes && data.routes.length > 0) {
                     const route = data.routes[0].geometry;
 
-                    // 添加路徑到地圖
                     mapInstance.value.addLayer({
                         id: 'route',
                         type: 'line',
@@ -193,7 +136,7 @@ export default defineComponent({
                     type: 'Feature',
                     geometry: {
                         type: 'Point',
-                        coordinates: [121.540592, 25.056111], // 經度和緯度
+                        coordinates: [121.540592, 25.056111],
                     },
                     properties: {
                         title: '所在地',
@@ -205,9 +148,8 @@ export default defineComponent({
         const updateUserLocation = (coords: [number, number]) => {
             pointsJSON.features[0].geometry.coordinates = coords;
 
-            const source = mapInstance.value?.getSource('points');
+            const source = mapInstance.value?.getSource('Points');
 
-            // 確認 source 是一個 GeoJSONSource
             if (source && (source as mapboxgl.GeoJSONSource).setData) {
                 (source as mapboxgl.GeoJSONSource).setData(pointsJSON);
             } else {
@@ -217,19 +159,14 @@ export default defineComponent({
 
         onMounted(() => {
             mapboxgl.accessToken =
-                'pk.eyJ1IjoicmljaDc0MjAiLCJhIjoiY20wa3B2ZnlxMWJraDJrb2I1a2I4ZzMwcSJ9.MQC2ef9isDmw5Uc37uiqeg'; // 替換成你的 Mapbox API 金鑰
+                'pk.eyJ1IjoicmljaDc0MjAiLCJhIjoiY20wa3B2ZnlxMWJraDJrb2I1a2I4ZzMwcSJ9.MQC2ef9isDmw5Uc37uiqeg';
             var userCoords: [number, number] = [121.540592, 25.056111];
 
-            // 獲取用戶位置
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         userCoords = [position.coords.longitude, position.coords.latitude];
-
-                        // 更新地圖中心到用戶GPS位址
                         mapInstance.value!.setCenter(userCoords);
-
-                        // 更新GeoJSON圖層數據
                         updateUserLocation(userCoords);
                     },
                     (error) => {
@@ -241,18 +178,16 @@ export default defineComponent({
             }
 
             mapInstance.value = new mapboxgl.Map({
-                container: 'map', // 對應上面的 id="map"
-                style: 'mapbox://styles/rich7420/cm0mii7r6002y01r3ao4pfbag', // 地圖樣式
-                center: userCoords, // 設定地圖中心 [經度, 緯度]
-                zoom: 12.5, // 設定初始縮放級別
-                pitch: 45, // 攝像機俯仰角度
-                bearing: -17.6, // 攝像機方向角度
+                container: 'map',
+                style: 'mapbox://styles/rich7420/cm0mii7r6002y01r3ao4pfbag',
+                center: userCoords,
+                zoom: 17,
+                pitch: 45,
+                bearing: -17.6,
             });
 
-            // 添加中文語言支持
             mapInstance.value.addControl(new MapboxLanguage({ defaultLanguage: 'zh-Hant' }));
 
-            // 加載圖片並添加到地圖上
             mapInstance.value.loadImage(imagePath, (error, image) => {
                 if (error) {
                     console.error('圖片加載失敗:', error);
@@ -260,11 +195,11 @@ export default defineComponent({
                 }
 
                 if (image) {
-                    console.log('圖片加載成功');
                     mapInstance.value!.addImage('pointImg', image);
 
                     mapInstance.value!.on('load', () => {
-                        // 添加 GeoJSON 圖層
+
+
                         mapInstance.value!.addLayer({
                             id: 'points',
                             type: 'symbol',
@@ -278,24 +213,25 @@ export default defineComponent({
                             },
                         });
 
-                        // 點擊事件處理
                         mapInstance.value!.on('click', (event) => {
-                            drawRouteWithTrashcarData();
-
                             const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-                                layers: ['dogpoo', 'cleanbox'], // 只查詢這兩個圖層
+                                layers: ['dogpoo', 'cleanbox','trashcar-1'],
                             });
 
                             if (features.length) {
                                 const clickedFeature = features[0];
+                                console.log('Clicked feature:', clickedFeature);  // 調試點擊功能
+
                                 const coordinates =
                                     clickedFeature.geometry?.type === 'Point'
                                         ? clickedFeature.geometry.coordinates
                                         : null;
 
-                                if (clickedFeature.properties && clickedFeature.properties.title && coordinates) {
+                                const titleKey = Object.keys(clickedFeature.properties).find(key => key.trim() === 'title');
+                                const title = clickedFeature.properties[titleKey];
+                                if (clickedFeature.properties && title && coordinates) {
                                     alert(
-                                        `You clicked on: ${clickedFeature.properties.title}\nCoordinates: [${coordinates[0]}, ${coordinates[1]}]`
+                                        `You clicked on: ${title}\nCoordinates: [${coordinates[0]}, ${coordinates[1]}]`
                                     );
                                 } else {
                                     console.log('No valid properties or coordinates found on clicked feature.');
@@ -305,16 +241,28 @@ export default defineComponent({
                             }
                         });
 
-                        // 改變游標形狀以提示用戶
+                        mapInstance.value!.on('click', (event) => {
+                            const features = mapInstance.value!.queryRenderedFeatures(event.point);
+
+                            if (features.length > 0) {
+                                const clickedFeature = features[0];
+
+                                // 檢查圖層的名稱是否為 'trashcar-1' 且類型是否為 'circle'
+                                if (clickedFeature.layer.id === 'trashcar-1' && clickedFeature.layer.type === 'circle') {
+                                    // 不帶參數呼叫 drawRouteWithTrashcarData
+                                    drawRouteWithTrashcarData();
+                                }
+                            }
+                        });
+
+
                         mapInstance.value!.on('mousemove', (event) => {
                             const features = mapInstance.value!.queryRenderedFeatures(event.point, {
-                                layers: ['dogpoo', 'cleanbox'],
+                                layers: ['dogpoo', 'cleanbox','trashcar-1'],
                             });
 
                             mapInstance.value!.getCanvas().style.cursor = features.length ? 'pointer' : '';
                         });
-
-                        // 添加地形
                         mapInstance.value!.addSource('mapbox-dem', {
                             type: 'raster-dem',
                             url: 'mapbox://mapbox.terrain-rgb',
@@ -324,7 +272,6 @@ export default defineComponent({
 
                         mapInstance.value!.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
 
-                        // 添加 3D 建築物
                         if (mapInstance.value) {
                             const style = mapInstance.value.getStyle();
                             if (style && style.layers) {
@@ -375,8 +322,6 @@ export default defineComponent({
                         } else {
                             console.error('Map instance is not initialized.');
                         }
-
-                        console.log('Layers are loaded and 3D effects are added.');
                     });
                 }
             });
