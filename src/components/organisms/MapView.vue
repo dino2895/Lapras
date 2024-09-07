@@ -4,12 +4,12 @@
   <!-- 垂直靠右排列的按鈕 -->
   <div class="absolute top-4 right-4 z-10 flex flex-col space-y-4">
     <button @click="toggleMenu"
-      class="bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300">
+      class="w-20 bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300">
       選單
     </button>
     <button @click="resetCenter"
-      class="bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300">
-      定位
+      class="w-20 bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300">
+      <img src="@/assets/images/gps.png">
     </button>
   </div>
 
