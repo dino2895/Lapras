@@ -6,15 +6,19 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/$PROJECT_ID/lapras-service:$COMMIT_SHA']
 # Deploy container image to Cloud Run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
-    args:
-    - 'run'
-    - 'deploy'
-    - 'lapras-service'
-    - '--image'
-    - 'gcr.io/$PROJECT_ID/lapras-service:$COMMIT_SHA'
-    - '--region'
-    - 'asia-east1'
-  images:
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+  - 'run'
+  - 'deploy'
+  - 'lapras-service'
+  - '--image'
   - 'gcr.io/$PROJECT_ID/lapras-service:$COMMIT_SHA'
+  - '--region'
+  - 'asia-east1'
+images:
+- 'gcr.io/$PROJECT_ID/lapras-service:$COMMIT_SHA'
+
+
+options:
+  logging: CLOUD_LOGGING_ONLY
