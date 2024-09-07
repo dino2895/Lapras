@@ -12,6 +12,16 @@ import ServiceStep from '@/components/molecules/ServiceStep.vue';
 import serviceListJson from '../../public/mock/service_list.json';
 import caseProgressJson from '../../public/mock/case_progress.json';
 import type { User } from '@/stores/user';
+import DialogModalVue from '../components/DialogModal.vue';
+
+const props = defineProps({
+  modelValue: Boolean,
+  content: String
+});
+
+const showDialog = ref(false);
+const dialogContent = ref('');
+const chatMsgValue = ref('');
 
 const store = useFormStore();
 
@@ -39,9 +49,7 @@ if (route.query.isSearch) {
   activeTab.value = 1;
 }
 
-const chatMsgValue = ref('');
 const serviceList = ref(serviceListJson);
-const isSearch = ref(false);
 
 const flatServiceList = computed(() =>
   serviceList.value.data
@@ -90,11 +98,8 @@ const onSearchClick = () => {
     .then((res) => res.json())
     .then((data) => {
       // searchResult.value = data;
-      var result = document.getElementById('result');
-      if (result) {
-        result.innerHTML = `<h1>${data}</h1>`;
-      }
-      // isSearch.value = true;
+      showDialog.value = !showDialog.value;
+      dialogContent.value = data;
     });
 };
 
@@ -112,6 +117,7 @@ const finishRecord = computed(() =>
 const activeRecord = computed(() =>
   activeSituation.value === 'apply' ? applyRecord.value : finishRecord.value
 );
+
 /**
  * tab1 JS end
  */
@@ -129,16 +135,22 @@ const activeRecord = computed(() =>
             </button>
           </section>
           <div class="flex justify-center">
-            <div class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center" style="background-color: #5ab4c5">
+            <div
+              class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center"
+              style="background-color: #5ab4c5"
+            >
               <i class="fa-solid fa-cloud-arrow-up text-8xl text-white py-4"></i>
               <p class="text-white text-center">想要詢問的垃圾分類圖片?</p>
             </div>
-            <div class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center" style="background-color: #5ab4c5">
+            <div
+              class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center"
+              style="background-color: #5ab4c5"
+            >
               <i class="fa-solid fa-camera-retro text-8xl text-white py-4"></i>
               <p class="text-white text-center">請輸入您想要丟的垃圾</p>
             </div>
           </div>
-          <div id="result"></div>
+          <DialogModalVue v-model="showDialog" :content="dialogContent"></DialogModalVue>
           <!-- <p class="text-grey-500 mt-4 mb-2 px-4">請選擇要申請的項目</p>
           <ul v-show="!isSearch || (isSearch && searchResult?.length)">
             <li
