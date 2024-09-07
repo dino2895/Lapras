@@ -1,33 +1,46 @@
 <template>
   <div class="w-full h-screen" id="map"></div>
-  <!-- 選單按鈕 -->
-  <div class="absolute top-4 left-0 right-0 z-10 flex justify-center space-x-4">
-    <button @click="toggleMenu" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+
+  <!-- 垂直靠右排列的按鈕 -->
+  <div class="absolute top-4 right-4 z-10 flex flex-col space-y-4">
+    <button @click="toggleMenu"
+      class="w-20 bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300">
       選單
+    </button>
+    <button @click="resetCenter"
+      class="w-20 bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300">
+      <img src="@/assets/images/gps.png">
     </button>
   </div>
 
   <!-- 選單內容 -->
   <transition name="slide">
-    <div v-show="showMenu" class="absolute top-12 left-0 right-0 bg-white shadow-lg z-20 p-4">
+    <div v-show="showMenu"
+      class="absolute top-16 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg z-20 p-6 w-80 text-center">
+      <h3 class="text-lg font-bold mb-4">選單</h3>
       <button @click="toggleLayerVisibility('dogpoo')"
-        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+        class="bg-blue-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-600 transition-all duration-300">
         狗便清潔箱
       </button>
       <button @click="toggleLayerVisibility('cleanbox')"
-        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+        class="bg-green-500 text-white w-full py-3 rounded-full mb-4 shadow hover:bg-green-600 transition-all duration-300">
         行人專用清潔箱
       </button>
       <button @click="toggleAllTrashcarLayersVisibility"
-        class="bg-yellow-300 text-gray px-4 py-2 rounded hover:bg-yellow-500 transition">
+        class="bg-yellow-300 text-gray-800 w-full py-3 rounded-full shadow hover:bg-yellow-400 transition-all duration-300">
         垃圾車站點
       </button>
-      <button @click="resetCenter" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+      <button @click="resetCenter"
+        class="bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300">
         回到定位
       </button>
       <button @click="toggleNavigation"
-        class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition">
+        class="bg-purple-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-purple-600 transition-all duration-300">
         導航模式
+      </button>
+      <button @click="toggleSidebar"
+        class="bg-green-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300">
+        提醒
       </button>
     </div>
   </transition>
@@ -35,41 +48,33 @@
   <!-- 側邊欄 -->
   <transition name="slide">
     <div v-show="showSidebar"
-      class="fixed top-0 right-0 bottom-0 bg-white w-80 p-4 shadow-lg z-20 transition-transform transform translate-x-0">
+      class="fixed top-0 right-0 bottom-0 bg-white w-80 p-6 shadow-lg z-20 transition-transform transform translate-x-0">
       <button @click="toggleSidebar" class="absolute top-4 left-4 text-gray-600">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
       </button>
-      <h2 class="text-lg font-bold mb-2">___提醒</h2>
-      <div class="mb-4">
-        <input v-model.number="alarmMinutes" type="number" placeholder="設置鬧鐘分鐘" class="border p-2 w-full mb-2" />
-        <button @click="setAlarm" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+      <h2 class="text-lg font-bold mb-6">提醒</h2>
+      <div class="mb-6">
+        <input v-model.number="alarmMinutes" type="number" placeholder="設置鬧鐘分鐘"
+          class="border p-3 w-full rounded mb-4" />
+        <button @click="setAlarm"
+          class="bg-blue-500 text-white w-full py-3 rounded-full shadow hover:bg-blue-600 transition-all duration-300">
           設定鬧鐘
         </button>
       </div>
       <ul>
-        <li v-for="(alarm, index) in alarms" :key="index" class="flex justify-between items-center mb-2">
+        <li v-for="(alarm, index) in alarms" :key="index" class="flex justify-between items-center mb-4">
           <span>{{ alarm.minutes }} 分鐘</span>
           <span>{{ alarm.timeRemaining }} 秒後響</span>
-          <button @click="removeAlarm(index)" class="text-red-500">刪除</button>
+          <button @click="removeAlarm(index)"
+            class="text-red-500 hover:text-red-600 transition-all duration-300">刪除</button>
         </li>
       </ul>
     </div>
   </transition>
-
-  <!-- 鬧鐘訊息 -->
-  <div v-if="alarmMessage"
-    class="absolute top-1/4 left-1/2 transform -translate-x-1/2 z-10 bg-red-500 text-white px-4 py-2 rounded">
-    {{ alarmMessage }}
-  </div>
-
-  <!-- 開關側邊欄按鈕 -->
-  <button @click="toggleSidebar"
-    class="fixed top-4 right-4 z-20 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-    提醒
-  </button>
 </template>
+
 
 
 <script lang="ts">
@@ -622,43 +627,43 @@ export default defineComponent({
 
 <style lang="css">
 .mapboxgl-ctrl-directions {
-    max-width: 12rem;
-    width: 100%;
-    padding: 0.75rem; 
-    background-color: white;
-    border-radius: 0.375rem;
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+  max-width: 12rem;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: white;
+  border-radius: 0.375rem;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
 }
 
 .mapboxgl-ctrl-directions .mapbox-directions-origin,
 .mapboxgl-ctrl-directions .mapbox-directions-destination {
-    display: none !important;
-    background-color: #f7fafc;
-    border-radius: 0.375rem;
-    font-size: 0.75rem;
-    padding: 0.4rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  display: none !important;
+  background-color: #f7fafc;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  padding: 0.4rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .mapboxgl-ctrl-directions .directions-icon-reverse {
-    display: none !important;
+  display: none !important;
 }
 
 .mapboxgl-ctrl-directions .mapbox-directions-profile {
-    display: flex !important;
-    pointer-events: auto;
-    background-color: #ebf8ff;
-    color: #3182ce;
-    font-weight: 600;
-    padding: 0.4rem 0.75rem; 
-    border-radius: 0.25rem; 
+  display: flex !important;
+  pointer-events: auto;
+  background-color: #ebf8ff;
+  color: #3182ce;
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.25rem;
 }
 
 .mapboxgl-ctrl-directions .mapbox-directions-route-summary {
-    background-color: #cfe0ff;
-    padding: 0.75rem;
-    border-radius: 0.375rem;
-    color: #2a4365;
+  background-color: #cfe0ff;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  color: #2a4365;
 }
 
 /* Define slide transition */
