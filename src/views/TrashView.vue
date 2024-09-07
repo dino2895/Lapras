@@ -39,7 +39,7 @@ if (route.query.isSearch) {
   activeTab.value = 1;
 }
 
-const searchValue = ref('');
+const chatMsgValue = ref('');
 const serviceList = ref(serviceListJson);
 const isSearch = ref(false);
 
@@ -80,16 +80,19 @@ const searchResultAgencyTypeSet = computed(
 const searchResultTitle = computed(() => searchResult.value?.map((item) => item.title));
 
 const onSearchClick = () => {
-  const result = flatServiceList.value.filter((option) => option.title.includes(searchValue.value));
-
-  searchResult.value = result;
-  expandList.value = Array.from(new Set(result.map((item) => item.type)));
-
-  if (searchValue.value) {
-    isSearch.value = true;
-  } else {
-    isSearch.value = false;
-  }
+  fetch(`https://lapras-backend-752705272074.asia-east1.run.app` + '/api/chat/text/send', {
+    method: 'POST',
+    body: JSON.stringify({ msg: chatMsgValue.value })
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      // searchResult.value = data;
+      var result = document.getElementById('result');
+      if (result) {
+        result.innerHTML = `<h1>${data}</h1>`;
+      }
+      // isSearch.value = true;
+    });
 };
 
 const activeSituation = ref('apply');
@@ -117,12 +120,23 @@ const activeRecord = computed(() =>
       <template #tab0>
         <div class="py-4">
           <section class="flex items-center px-4">
-            <BaseInput v-model="searchValue" placeholder="您要丟的垃圾？" class="flex-grow" />
+            <BaseInput v-model="chatMsgValue" placeholder="您想要丟的垃圾是？" class="flex-grow" />
             <button class="search-button" @click="onSearchClick">
               <img src="@/assets/images/search-icon.svg" alt="搜尋" />
             </button>
           </section>
-          <p class="text-grey-500 mt-4 mb-2 px-4">請選擇要申請的項目</p>
+          <div class="flex justify-center">
+            <div class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center" style="background-color: #5ab4c5">
+              <i class="fa-solid fa-cloud-arrow-up text-8xl text-white py-4"></i>
+              <p class="text-white text-center">想要詢問的垃圾分類圖片?</p>
+            </div>
+            <div class="w-1/2 mx-4 my-8 rounded-lg min-h-52 flex flex-col items-center justify-center" style="background-color: #5ab4c5">
+              <i class="fa-solid fa-camera-retro text-8xl text-white py-4"></i>
+              <p class="text-white text-center">請輸入您想要丟的垃圾</p>
+            </div>
+          </div>
+          <div id="result"></div>
+          <!-- <p class="text-grey-500 mt-4 mb-2 px-4">請選擇要申請的項目</p>
           <ul v-show="!isSearch || (isSearch && searchResult?.length)">
             <li
               v-show="!searchResult?.length || searchResultTypeSet.has(item.name)"
@@ -196,7 +210,7 @@ const activeRecord = computed(() =>
           </ul>
           <div v-show="isSearch && !searchResult?.length" class="flex flex-col items-center pt-40">
             <p class="text-primary-500 font-bold">查無任何申辦相關項目</p>
-          </div>
+          </div> -->
         </div>
       </template>
       <template #tab1>
