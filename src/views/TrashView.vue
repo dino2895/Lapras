@@ -1,10 +1,40 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { RouterLink, useRoute } from 'vue-router';
+import { useFormStore } from '@/stores/form';
+import { useUserStore } from '@/stores/user';
+import { storeToRefs } from 'pinia';
+import { useConnectionMessage } from '@/composables/useConnectionMessage';
+import { useHandleConnectionData } from '@/composables/useHandleConnectionData';
 import TrashTabsView from '../components/organisms/TrashTabsView.vue';
+import BaseInput from '@/components/atoms/BaseInput.vue';
+import ServiceStep from '@/components/molecules/ServiceStep.vue';
+import serviceListJson from '../../public/mock/service_list.json';
+import caseProgressJson from '../../public/mock/case_progress.json';
+import type { User } from '@/stores/user';
 import MapView from '../components/organisms/MapView.vue';
+
+const store = useFormStore();
+
+store.reset();
+
+const userStore = useUserStore();
+
+const { user } = storeToRefs(userStore);
+
+const handleUserInfo = (event: { data: string }) => {
+  const result: { name: string; data: User } = JSON.parse(event.data);
+
+  user.value = result.data;
+};
+
+useConnectionMessage('userinfo', null);
+
+useHandleConnectionData(handleUserInfo);
+
+const route = useRoute();
+
 const activeTab = ref(0);
-<<<<<<< HEAD
-=======
 
 if (route.query.isSearch) {
   activeTab.value = 1;
@@ -83,7 +113,6 @@ const activeRecord = computed(() =>
 /**
  * tab1 JS end
  */
->>>>>>> 99f48b5e945df01a535f8e569defc1bb7de14b4a
 </script>
 
 <template>
@@ -91,9 +120,6 @@ const activeRecord = computed(() =>
     <TrashTabsView v-model="activeTab">
       <template #tab0>
         <div class="py-4">
-<<<<<<< HEAD
-          <p>這是 Tab 1 的內容。</p>
-=======
           <section class="flex items-center px-4">
             <BaseInput v-model="chatMsgValue" placeholder="您想要丟的垃圾是？" class="flex-grow" />
             <button class="search-button" @click="onSearchClick">
@@ -186,7 +212,6 @@ const activeRecord = computed(() =>
           <div v-show="isSearch && !searchResult?.length" class="flex flex-col items-center pt-40">
             <p class="text-primary-500 font-bold">查無任何申辦相關項目</p>
           </div> -->
->>>>>>> 99f48b5e945df01a535f8e569defc1bb7de14b4a
         </div>
       </template>
       <template #tab1>
@@ -199,5 +224,30 @@ const activeRecord = computed(() =>
 </template>
 
 <style lang="postcss">
-/* 如果有需要樣式的話，可以在這裡加上 */
+.search-button {
+  @apply bg-primary-500 p-1 rounded-lg;
+  @apply h-11 w-11;
+  @apply flex justify-center items-center;
+  @apply -translate-x-1;
+}
+
+.option-title {
+  @apply relative;
+  @apply before:content-[''];
+  @apply before:w-1.5 before:h-0.5;
+  @apply before:bg-primary-500;
+  @apply before:inline-block;
+  @apply before:absolute before:-left-3.5 before:top-1/2 before:-translate-y-1/2;
+}
+
+.situation-button {
+  @apply text-primary-500;
+  @apply first:rounded-l last:rounded-r;
+  @apply border border-primary-500;
+  @apply py-0.5;
+
+  &--active {
+    @apply bg-primary-500 text-white;
+  }
+}
 </style>
