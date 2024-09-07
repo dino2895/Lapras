@@ -24,7 +24,6 @@ import MapboxLanguage from '@mapbox/mapbox-gl-language';
 import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
 import imagePath from '@/assets/images/geo-point.png';
-import { Target } from 'lucide-react';
 
 export default defineComponent({
     name: 'MapView',
