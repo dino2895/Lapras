@@ -1,4 +1,3 @@
-<!-- eslint-disable prettier-vue/prettier -->
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -49,8 +48,8 @@ const onPurchaseClick = () => {
         <img src="@/assets/images/down-icon.svg" class="rotate-90" />
       </button>
       <span class="font-bold text-gray-700">入場券</span>
+      <div />
     </section>
-  </div >
     <section v-if="ticketItem">
       <div
         class="relative bg-cover bg-no-repeat bg-center h-[200px] rounded-[10px] my-4"
@@ -183,4 +182,5 @@ const onPurchaseClick = () => {
       negativeText="取消"
       @onPositiveClick="onMapOpenClick"
     />
-  </template>
+  </div>
+</template>
