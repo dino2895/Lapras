@@ -3,26 +3,20 @@
 
   <!-- 垂直靠右排列的按鈕 -->
   <div class="absolute top-4 right-4 z-10 flex flex-col space-y-4">
-    <button
-      @click="toggleMenu"
-      class="w-20 custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
-    >
+    <button @click="toggleMenu"
+      class="w-20 custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
       選單
     </button>
-    <button
-      @click="resetCenter"
+    <button @click="resetCenter"
       class="bg-white text-white w-12 h-12 rounded-full shadow-lg hover: custom-gray transition-all duration-300 ml-auto"
-      style="display: block"
-    >
+      style="display: block">
       <img src="@/assets/images/gps.png" class="w-6 h-6 mx-auto" />
     </button>
   </div>
 
   <transition name="slide">
-    <div
-      v-show="showMenu"
-      class="absolute top-16 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg z-20 p-6 w-80 text-center"
-    >
+    <div v-show="showMenu"
+      class="absolute top-16 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg z-20 p-6 w-80 text-center">
       <button @click="toggleMenu" class="style1">
         <img src="@/assets/images/cancel-icon.svg" />
       </button>
@@ -48,16 +42,12 @@
           class="custom-heavygray text-white px-6 py-3 w-full rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
           回到目前定位
         </button>
-        <button
-          @click="toggleNavigation"
-          class="custom-heavygray text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
-        >
+        <button @click="toggleNavigation"
+          class="custom-heavygray text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
           導航模式
         </button>
-        <button
-          @click="toggleSidebar"
-          class="custom-heavygray text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300"
-        >
+        <button @click="toggleSidebar"
+          class="custom-heavygray text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
           鬧鐘列表
         </button>
       </div>
@@ -68,39 +58,35 @@
 
   <!-- 側邊欄 -->
   <transition name="slide">
-    <div
-      v-show="showSidebar"
-      class="fixed top-0 right-0 bottom-0 bg-white w-80 p-6 shadow-lg z-20 transition-transform transform translate-x-0"
-    >
-      <button @click="toggleSidebar" class="absolute top-4 left-4 text-gray-600">
+    <div v-show="showSidebar"
+      class="fixed top-0 right-0 bottom-0 bg-white w-96 p-8 shadow-lg z-20 transition-transform transform translate-x-0">
+      <button @click="toggleSidebar"
+        class="absolute top-4 right-4 text-gray-600 hover:text-gray-800 transition-colors duration-300">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"
-          ></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
       </button>
-      <h2 class="text-lg font-bold mb-6">提醒</h2>
-      <div v-if="alarms.length === 0" class="text-center text-gray-500">
+      <h2 class="text-2xl font-semibold mb-8 text-gray-800">提醒</h2>
+      <div v-if="alarms.length === 0" class="text-center text-gray-500 text-lg">
         尚未有已設定的鬧鐘
       </div>
-      <ul v-else>
-        <li v-for="(alarm, index) in alarms" :key="index" class="flex flex-col mb-4">
-          <div class="flex justify-between items-center">
-            <span>抵達時間：{{ alarm.arrivalTime }}</span>
-            <span>提前 {{ alarm.minutes }} 分鐘響</span>
-            <span>{{ alarm.timeRemaining }} 秒後響</span>
-            <button @click="removeAlarm(index)" class="text-red-500 hover:text-red-600 transition-all duration-300">
-              刪除
-            </button>
+      <ul v-else class="space-y-4">
+        <li v-for="(alarm, index) in alarms" :key="index" class="flex flex-col p-6 bg-gray-100 rounded-lg shadow-sm">
+          <div class="flex flex-col space-y-2 text-gray-700">
+            <span class="text-base">抵達時間：{{ alarm.arrivalTime }}</span>
+            <span class="text-base">提前 {{ alarm.minutes }} 分鐘響</span>
+            <span class="text-base">{{ formatTimeRemaining(alarm.timeRemaining) }}</span>
           </div>
+          <button @click="removeAlarm(index)"
+            class="mt-4 text-red-500 hover:text-red-600 transition-colors duration-300">
+            刪除
+          </button>
         </li>
       </ul>
-
     </div>
   </transition>
+
+
 
 </template>
 
@@ -190,6 +176,25 @@ export default defineComponent({
     // 鬧鐘相關狀態
     const alarms = ref<{ minutes: number, arrivalTime: string, timeRemaining: number, interval: NodeJS.Timeout }[]>([]);
 
+    function formatTimeRemaining(seconds: number): string {
+      if (seconds <= 0) return '即將響';
+
+      // 四捨五入秒數
+      const roundedSeconds = Math.round(seconds);
+
+      const hours = Math.floor(roundedSeconds / 3600);
+      const minutes = Math.floor((roundedSeconds % 3600) / 60);
+      const secs = roundedSeconds % 60;
+
+      let timeString = '';
+      if (hours > 0) timeString += `${hours} 小時 `;
+      if (minutes > 0) timeString += `${minutes} 分鐘 `;
+      if (secs > 0) timeString += `${secs} 秒 `;
+
+      return timeString.trim() + '後響';
+    }
+
+
     const setAlarm = (minutes: number, arrivalTime: number) => {
       if (minutes > 0) {
         const hours = Math.floor(arrivalTime / 100);
@@ -199,20 +204,24 @@ export default defineComponent({
         const arrivalDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutesOfArrival);
         const alarmTime = new Date(arrivalDate.getTime() - minutes * 60000);
 
-        console.log("alarmTime",alarmTime)
-        console.log("now",now)
+        console.log("alarmTime", alarmTime)
+        console.log("now", now)
 
 
         if (alarmTime > now) {
           const timeUntilAlarm = (alarmTime.getTime() - now.getTime()) / 1000;
+          const hours = Math.floor(arrivalTime / 100); // 取整數部分為小時
+          const minutesA = arrivalTime % 100; // 取餘數部分為分鐘
+          // 格式化為 'HH:MM'
+          const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutesA).padStart(2, '0')}`;
 
           const alarm = {
             minutes: minutes,
-            arrivalTime: arrivalTime,
+            arrivalTime: formattedTime,
             timeRemaining: timeUntilAlarm,
             interval: setInterval(() => {
               alarm.timeRemaining -= 1;
-              alarms.value = [...alarms.value]; 
+              alarms.value = [...alarms.value];
               if (alarm.timeRemaining <= 0) {
                 clearInterval(alarm.interval);
                 alert('鬧鐘時間到！');
@@ -221,7 +230,7 @@ export default defineComponent({
           };
 
           alarms.value.push(alarm); // 推送鬧鐘資料
-          console.log("alarm",alarm)
+          console.log("alarm", alarm)
           alarms.value = [...alarms.value]; // 強制更新 Vue 視圖
 
           alert(`鬧鐘已設定，將在 ${minutes} 分鐘前提醒你`);
@@ -248,13 +257,13 @@ export default defineComponent({
 
     // 更新彈出框設置鬧鐘的邏輯
     const setAlarmInPopup = (minutes: number, arrivalTime: number, popup: mapboxgl.Popup) => {
-  if (minutes > 0 && arrivalTime) {
-    setAlarm(minutes, arrivalTime); // 使用 setAlarm 來設定鬧鐘
-    popup.remove(); // 關閉彈出框
-  } else {
-    alert('請輸入有效的分鐘數和到達時間');
-  }
-};
+      if (minutes > 0 && arrivalTime) {
+        setAlarm(minutes, arrivalTime); // 使用 setAlarm 來設定鬧鐘
+        popup.remove(); // 關閉彈出框
+      } else {
+        alert('請輸入有效的分鐘數和到達時間');
+      }
+    };
 
 
 
@@ -583,20 +592,51 @@ export default defineComponent({
                 const title = clickedFeature.properties[titleKey];
 
                 if (clickedFeature.properties && title && coordinates) {
-                  const popup = new mapboxgl.Popup()
-                    .setLngLat([event.lngLat.lng, event.lngLat.lat])
-                    .setHTML(`<div><input type="number" id="minutes" placeholder="提前幾分鐘" /><br /><button id="setAlarm">設定鬧鐘</button></div>`)
-                    .addTo(mapInstance.value!);
+                  const layerId = clickedFeature.layer.id;
 
-                  document.getElementById('setAlarm')?.addEventListener('click', () => {
-                    const minutes = parseInt((document.getElementById('minutes') as HTMLInputElement).value);
-                    const arrivalTime = clickedFeature.properties['抵達時間']// 簡化為坐標時間
-                    setAlarmInPopup(minutes, arrivalTime, popup);
-                  });
+                  // 只有以 'trashcar-' 開頭的圖層才會顯示帶抵達時間的彈出窗口
+                  if (layerId.startsWith('trashcar-')) {
+                    const arT = clickedFeature.properties['抵達時間'];
+                    const hours = Math.floor(arT / 100); // 取整數部分為小時
+                    const minutes = arT % 100; // 取餘數部分為分鐘
+                    const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+
+                    const popup = new mapboxgl.Popup()
+                      .setLngLat([event.lngLat.lng, event.lngLat.lat])
+                      .setHTML(`
+            <div class="p-4 bg-white rounded-lg shadow-lg">
+              <h4 class="text-lg font-semibold mb-2 text-gray-800">${title}</h4>
+              <h3 class="text-lg font-semibold mb-2 text-gray-800">抵達時間${formattedTime}</h3>
+              <div class="mb-4">
+                <label for="minutes" class="block text-sm font-medium text-gray-700">提前幾分鐘提醒：</label>
+                <input type="number" id="minutes" placeholder="提前幾分鐘" class="mt-1 p-2 w-full border rounded-lg focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <button id="setAlarm" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">設定鬧鐘</button>
+            </div>
+          `)
+                      .addTo(mapInstance.value!);
+
+                    document.getElementById('setAlarm')?.addEventListener('click', () => {
+                      const minutes = parseInt((document.getElementById('minutes') as HTMLInputElement).value);
+                      const arrivalTime = clickedFeature.properties['抵達時間'];
+                      setAlarmInPopup(minutes, arrivalTime, popup);
+                    });
+
+                  } else {
+                    // 其他圖層只顯示 title
+                    new mapboxgl.Popup()
+                      .setLngLat([event.lngLat.lng, event.lngLat.lat])
+                      .setHTML(`
+            <div class="p-4 bg-white rounded-lg shadow-lg">
+              <h5 class="text-lg font-semibold mb-2 text-gray-800">${title}</h5>
+            </div>
+          `)
+                      .addTo(mapInstance.value!);
+                  }
                 }
-
               }
             });
+
 
             mapInstance.value!.on('mousemove', (event) => {
               const features = mapInstance.value!.queryRenderedFeatures(event.point, {
@@ -731,6 +771,7 @@ export default defineComponent({
       directionsControl,
       navigationEnabled,
       destinationCoords,
+      formatTimeRemaining
     };
   }
 });
@@ -796,7 +837,8 @@ export default defineComponent({
 .slide-enter,
 .slide-leave-to
 
-/* .slide-leave-active in <2.1.8 */ {
+/* .slide-leave-active in <2.1.8 */
+  {
   transform: translateX(100%);
 }
 
@@ -833,27 +875,33 @@ export default defineComponent({
 }
 
 .custom-blue {
-  background-color: #5ab4c5; /* 自定義藍色背景 */
+  background-color: #5ab4c5;
+  /* 自定義藍色背景 */
 }
 
 .custom-gray {
-  background-color: #d9d9d9; /* 自定義輝色背景 */
+  background-color: #d9d9d9;
+  /* 自定義輝色背景 */
 }
 
 .custom-littleblue {
-  background-color: #0d1719; /* 自定義淺色背景 */
+  background-color: #0d1719;
+  /* 自定義淺色背景 */
 }
 
 .custom-heavygray {
-  background-color: #1e1d1d62; /* 自定義輝色背景 */
+  background-color: #1e1d1d62;
+  /* 自定義輝色背景 */
 }
 
 .custom-dog {
-  background-color: #5e6a58; /* 自定義淺色背景 */
+  background-color: #5e6a58;
+  /* 自定義淺色背景 */
 }
 
 .custom-car {
-  background-color: #a77f48; /* 自定義淺色背景 */
+  background-color: #a77f48;
+  /* 自定義淺色背景 */
 }
 
 .list-container {
