@@ -21,7 +21,7 @@ const activeTab = defineModel({ default: 0 });
 
 <template>
   <ServiceTabs v-model="activeTab" :tab-list="props.tabList" :contentType="props.contentType" />
-  <section class="tab-view-container">
+  <section class="tab-view-container scale-100">
     <div
       v-for="(item, index) in props.tabList"
       :key="item.id"
