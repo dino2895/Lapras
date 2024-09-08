@@ -82,7 +82,7 @@
           ></path>
         </svg>
       </button>
-      <h2 class="text-lg font-bold mb-6">提醒</h2>
+      <h2 class="text-lg font-bold mb-6 pl-8">鬧鐘列表</h2>
       <div v-if="alarms.length === 0" class="text-center text-gray-500">
         尚未有已設定的鬧鐘
       </div>
