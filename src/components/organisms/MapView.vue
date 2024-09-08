@@ -605,11 +605,11 @@ export default defineComponent({
                       .setLngLat([event.lngLat.lng, event.lngLat.lat])
                       .setHTML(`
             <div class="p-4 bg-white rounded-lg shadow-lg">
-              <h4 class="text-lg font-semibold mb-2 text-gray-800">${title}</h4>
-              <h3 class="text-lg font-semibold mb-2 text-gray-800">抵達時間${formattedTime}</h3>
+              <h5 class="text-sm font-semibold mb-2 text-gray-800">地點：</br>${title}</h5>
+              <p class="text-sm font-semibold mb-2 text-gray-800">垃圾車抵達時間${formattedTime}</p>
               <div class="mb-4">
                 <label for="minutes" class="block text-sm font-medium text-gray-700">提前幾分鐘提醒：</label>
-                <input type="number" id="minutes" placeholder="提前幾分鐘" class="mt-1 p-2 w-full border rounded-lg focus:ring-blue-500 focus:border-blue-500" />
+                <input type="number" id="minutes" placeholder="請輸入數字" class="mt-1 p-2 w-full border rounded-lg focus:ring-blue-500 focus:border-blue-500" />
               </div>
               <button id="setAlarm" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">設定鬧鐘</button>
             </div>
@@ -628,7 +628,7 @@ export default defineComponent({
                       .setLngLat([event.lngLat.lng, event.lngLat.lat])
                       .setHTML(`
             <div class="p-4 bg-white rounded-lg shadow-lg">
-              <h5 class="text-lg font-semibold mb-2 text-gray-800">${title}</h5>
+              <h5 class="text-sm font-semibold mb-2 text-gray-800">地點：</br>${title}</h5>
             </div>
           `)
                       .addTo(mapInstance.value!);
