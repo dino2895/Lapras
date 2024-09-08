@@ -24,36 +24,34 @@
 
       <div class="list-container">
         <p style="padding: 5px;">點擊想要顯示的圖示</p>
-        <button @click="toggleLayerVisibility('dogpoo')"
+        <button @click="toggleLayerVisibility('dogpoo'); toggleMenu()"
           class="custom-dog text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transition-all duration-300">
           狗便清潔箱
         </button>
-        <button @click="toggleLayerVisibility('cleanbox')"
-          class="custom-blue text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transiion-all duration-300">
+        <button @click="toggleLayerVisibility('cleanbox'); toggleMenu()"
+          class="custom-blue text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transition-all duration-300">
           行人專用清潔箱
         </button>
-        <button @click="toggleAllTrashcarLayersVisibility"
+        <button @click="toggleAllTrashcarLayersVisibility(); toggleMenu()"
           class="custom-car text-white w-full py-3 rounded-full shadow hover:bg-blue-300 transition-all duration-300">
           垃圾車站點
         </button>
       </div>
       <div class="list-other-container">
-        <button @click="resetCenter"
+        <button @click="resetCenter(); toggleMenu()"
           class="custom-heavygray text-white px-6 py-3 w-full rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
           回到目前定位
         </button>
-        <button @click="toggleNavigation"
+        <button @click="toggleNavigation(); toggleMenu()"
           class="custom-heavygray text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
           導航模式
         </button>
-        <button @click="toggleSidebar"
+        <button @click="toggleSidebar(); toggleMenu()"
           class="custom-heavygray text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
           鬧鐘列表
         </button>
       </div>
-
     </div>
-
   </transition>
 
   <!-- 側邊欄 -->
