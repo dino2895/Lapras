@@ -66,8 +66,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
       </button>
-      <h2 class="text-2xl font-semibold mb-8 text-gray-800">提醒</h2>
-      <div v-if="alarms.length === 0" class="text-center text-gray-500 text-lg">
+      <h2 class="text-lg font-bold mb-6 pl-8">鬧鐘列表</h2>
+      <div v-if="alarms.length === 0" class="text-center text-gray-500">
         尚未有已設定的鬧鐘
       </div>
       <ul v-else class="space-y-4">
