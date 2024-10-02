@@ -2,10 +2,15 @@
   <div class="relative w-full h-screen">
     <div id="map" class="w-full h-full"></div>
     <MenuButtons @toggle-menu="toggleMenu" @reset-center="resetCenter" />
-    <MenuContent v-show="showMenu" :show-menu="showMenu" @toggle-menu="toggleMenu"
+    <MenuContent
+      v-model:showMenu="showMenu"
+      :mapInstance="mapInstance"
       @toggle-layer-visibility="toggleLayerVisibility"
-      @toggle-all-trashcar-layers-visibility="toggleAllTrashcarLayersVisibility" @reset-center="resetCenter"
-      @toggle-navigation="toggleNavigation" @toggle-sidebar="toggleSidebar" />
+      @toggle-all-trashcar-layers-visibility="toggleAllTrashcarLayersVisibility"
+      @reset-center="resetCenter"
+      @toggle-navigation="toggleNavigation"
+      @toggle-sidebar="toggleSidebar"
+    />
     <Sidebar v-show="showSidebar" :show-sidebar="showSidebar" :alarms="alarms" @toggle-sidebar="toggleSidebar"
       @remove-alarm="removeAlarm" />
   </div>
@@ -835,6 +840,7 @@ export default defineComponent({
 .slide-enter-active,
 .slide-leave-active {
   transition: transform 0.3s ease;
+  transition: transform 1s ease-in-out;
 }
 
 .slide-enter,
