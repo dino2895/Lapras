@@ -117,22 +117,29 @@ export default defineComponent({
       if (!mapInstance.value) return;
 
       const layers = mapInstance.value.getStyle().layers;
-      let isVisible = false; // 用於追蹤新的可見性狀態
+      let allVisible = true; // 預設認為所有圖層都是可見的
 
+      // 檢查所有垃圾車站點圖層的當前可見性狀態
       layers.forEach((layer) => {
         if (layer.id.startsWith('trashcar-')) {
           const currentVisibility = mapInstance.value.getLayoutProperty(layer.id, 'visibility');
-          const newVisibility = currentVisibility === 'visible' ? 'none' : 'visible';
-          mapInstance.value.setLayoutProperty(layer.id, 'visibility', newVisibility);
-
-          // 更新 isVisible 變量
-          if (newVisibility === 'visible') {
-            isVisible = true;
+          if (currentVisibility === 'none') {
+            allVisible = false; // 只要有一個圖層是隱藏的，我們就需要顯示它
           }
         }
       });
 
+      // 根據檢查結果決定是否顯示或隱藏
+      layers.forEach((layer) => {
+        if (layer.id.startsWith('trashcar-')) {
+          mapInstance.value.setLayoutProperty(layer.id, 'visibility', allVisible ? 'none' : 'visible');
+        }
+      });
+
+      // 更新開關狀態
+      TrashCarVisible.value = !allVisible; // 同步更新 UI 開關狀態
     };
+
 
     // 切換圖層可見性
     const toggleLayerVisibility = (layerId: keyof typeof layersVisibility.value) => {
@@ -140,14 +147,14 @@ export default defineComponent({
         if (!mapInstance.value) throw new Error('Map instance is not initialized.');
 
         const visibility = layersVisibility.value[layerId];
-        const newOpacity = visibility ? 0 : 1;
+        const newVisibility = visibility ? 'none' : 'visible'; // 使用 'none' 來完全隱藏圖層
 
         if (mapInstance.value.getLayer(layerId)) {
-          // 只適用circle類型圖層
-          mapInstance.value.setPaintProperty(layerId, 'circle-opacity', newOpacity);
+          // 將圖層可見性設置為 'none' 或 'visible'
+          mapInstance.value.setLayoutProperty(layerId, 'visibility', newVisibility);
           layersVisibility.value[layerId] = !visibility;
 
-          // 根據圖層可見性顯示對應的 alert
+          // 根據圖層可見性顯示對應的通知
           if (!visibility) {
             sendNotification(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 顯示`);
           } else {
@@ -160,6 +167,7 @@ export default defineComponent({
         console.error('An error occurred in toggleLayerVisibility:', error);
       }
     };
+
 
     // 鬧鐘相關狀態
     const alarms = ref<
