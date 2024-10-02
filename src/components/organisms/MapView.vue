@@ -839,8 +839,7 @@ export default defineComponent({
 /* Define slide transition */
 .slide-enter-active,
 .slide-leave-active {
-  transition: transform 0.3s ease;
-  transition: transform 1s ease-in-out;
+  transition: transform 0.5s ease-in-out;
 }
 
 .slide-enter,
