@@ -4,7 +4,7 @@
       <button @click="toggleMenu" class="style1">
         <img src="@/assets/images/cancel-icon.svg" />
       </button>
-      <h3 class="menu-title">選單</h3>
+      <h1 class="menu-title">選單</h1>
       <div class="list-container">
         <div class="container">
           <label class="switch">
@@ -126,15 +126,22 @@ export default {
   background: white;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 1rem;
   width: 20rem;
   z-index: 20;
 }
 
 .menu-title {
-  text-align: center;
-  font-weight: bold;
-  margin-bottom: 1rem;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    color: #333; /* 深灰色字體 */
+    letter-spacing: 0.05em; /* 增加字母間距 */
+    text-transform: uppercase; /* 字母轉換為大寫 */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2); /* 添加輕微陰影 */
+    border-bottom: 2px solid #ccc; /* 下方加上細邊框 */
+    padding-bottom: 0.5rem; /* 邊框與字體之間距離 */
 }
 
 .info-text {
@@ -147,8 +154,15 @@ export default {
   padding: 0.75rem;
   border-radius: 0.375rem;
   margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: Arial, Helvetica, sans-serif;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: background-color 10s;
+}
+
+.custom-button:hover {
+    transform: scale(1.05); /* 滑過時放大一點 */
 }
 
 .custom-blue {
@@ -245,7 +259,7 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%);
   font-weight: 600;
-  font-size: 1.2rem;
+  font-size: 1rem;
   transition: all 0.4s;
   -webkit-user-select: none;
   -ms-user-select: none;
