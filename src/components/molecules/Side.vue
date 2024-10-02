@@ -26,12 +26,13 @@
           class="flex flex-col p-6 bg-gray-100 rounded-lg shadow-sm"
         >
           <div class="flex flex-col space-y-2 text-gray-700">
-            <span class="text-base">抵達時間：{{ alarm.arrivalTime }}</span>
+            <span class="text-base">地點：{{ alarm.title }}</span>
+            <span class="text-base">抵達時間：{{ alarm.arrivalTimeFormatted }}</span>
             <span class="text-base">提前 {{ alarm.minutes }} 分鐘響</span>
             <span class="text-base">{{ formatTimeRemaining(alarm.timeRemaining) }}</span>
           </div>
           <button
-            @click="$emit('remove-alarm', index)"
+            @click="$emit('remove-alarm', alarm.title)"
             class="mt-4 text-red-500 hover:text-red-600 transition-colors duration-300"
           >
             刪除

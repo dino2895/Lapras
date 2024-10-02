@@ -2,23 +2,12 @@
   <div class="relative w-full h-screen">
     <div id="map" class="w-full h-full"></div>
     <MenuButtons @toggle-menu="toggleMenu" @reset-center="resetCenter" />
-    <MenuContent
-      v-show="showMenu"
-      :show-menu="showMenu"
-      @toggle-menu="toggleMenu"
+    <MenuContent v-show="showMenu" :show-menu="showMenu" @toggle-menu="toggleMenu"
       @toggle-layer-visibility="toggleLayerVisibility"
-      @toggle-all-trashcar-layers-visibility="toggleAllTrashcarLayersVisibility"
-      @reset-center="resetCenter"
-      @toggle-navigation="toggleNavigation"
-      @toggle-sidebar="toggleSidebar"
-    />
-    <Sidebar
-      v-show="showSidebar"
-      :show-sidebar="showSidebar"
-      :alarms="alarms"
-      @toggle-sidebar="toggleSidebar"
-      @remove-alarm="removeAlarm"
-    />
+      @toggle-all-trashcar-layers-visibility="toggleAllTrashcarLayersVisibility" @reset-center="resetCenter"
+      @toggle-navigation="toggleNavigation" @toggle-sidebar="toggleSidebar" />
+    <Sidebar v-show="showSidebar" :show-sidebar="showSidebar" :alarms="alarms" @toggle-sidebar="toggleSidebar"
+      @remove-alarm="removeAlarm" />
   </div>
 </template>
 
@@ -113,18 +102,17 @@ export default defineComponent({
 
     // 鬧鐘相關狀態
     const alarms = ref<
-      { minutes: number; arrivalTime: string; timeRemaining: number; interval: NodeJS.Timeout }[]
+      { minutes: number; arrivalTime: string; timeRemaining: number; interval: NodeJS.Timeout; title: string }[]
     >([]);
 
+
+    // 格式化剩餘時間
     function formatTimeRemaining(seconds: number): string {
       if (seconds <= 0) return '即將響';
 
-      // 四捨五入秒數
-      const roundedSeconds = Math.round(seconds);
-
-      const hours = Math.floor(roundedSeconds / 3600);
-      const minutes = Math.floor((roundedSeconds % 3600) / 60);
-      const secs = roundedSeconds % 60;
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
 
       let timeString = '';
       if (hours > 0) timeString += `${hours} 小時 `;
@@ -134,62 +122,75 @@ export default defineComponent({
       return timeString.trim() + '後響';
     }
 
-    const setAlarm = (minutes: number, arrivalTime: number) => {
-      if (minutes > 0) {
+    // 設定鬧鐘並保存至 localStorage
+    const setAlarm = (minutes: number, arrivalTime: number, title: string) => {
+      if (minutes > 0 && arrivalTime) {
         const hours = Math.floor(arrivalTime / 100);
         const minutesOfArrival = arrivalTime % 100;
-
         const now = new Date();
-        const arrivalDate = new Date(
+        const alarmDate = new Date(
           now.getFullYear(),
           now.getMonth(),
           now.getDate(),
           hours,
-          minutesOfArrival
+          minutesOfArrival-minutes
         );
-        const alarmTime = new Date(arrivalDate.getTime() - minutes * 60000);
+        console.log(minutes)
+        const alarm = {
+          minutes,
+          title,
+          alarmTime: alarmDate.getTime(), // 保存鬧鐘抵達時間（UNIX時間戳）
+          arrivalTimeFormatted: hours +  "：" + minutesOfArrival
+        };
 
-        console.log('alarmTime', alarmTime);
-        console.log('now', now);
+        // 保存至 localStorage
+        let alarmList = JSON.parse(localStorage.getItem('alarms') || '[]');
+        alarmList.push(alarm);
+        localStorage.setItem('alarms', JSON.stringify(alarmList));
 
-        if (alarmTime > now) {
-          const timeUntilAlarm = (alarmTime.getTime() - now.getTime()) / 1000;
-          const hours = Math.floor(arrivalTime / 100); // 取整數部分為小時
-          const minutesA = arrivalTime % 100; // 取餘數部分為分鐘
-          // 格式化為 'HH:MM'
-          const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutesA).padStart(2, '0')}`;
-
-          const alarm = {
-            minutes: minutes,
-            arrivalTime: formattedTime,
-            timeRemaining: timeUntilAlarm,
-            interval: setInterval(() => {
-              alarm.timeRemaining -= 1;
-              alarms.value = [...alarms.value];
-              if (alarm.timeRemaining <= 0) {
-                clearInterval(alarm.interval);
-                alert('鬧鐘時間到！');
-              }
-            }, 1000)
-          };
-
-          alarms.value.push(alarm); // 推送鬧鐘資料
-          console.log('alarm', alarm);
-          alarms.value = [...alarms.value]; // 強制更新 Vue 視圖
-
-          alert(`鬧鐘已設定，將在 ${minutes} 分鐘前提醒你`);
-        } else {
-          alert('鬧鐘時間無效，請設定一個未來的時間');
-        }
+        alert(`鬧鐘已設定，將在 ${minutes} 分鐘後提醒你`);
       } else {
-        alert('請輸入有效的分鐘數和到達時間');
+        alert('請輸入有效的時間');
       }
     };
 
-    const removeAlarm = (index: number) => {
-      clearInterval(alarms.value[index].interval);
-      alarms.value.splice(index, 1);
+    // 每秒更新鬧鐘剩餘時間
+    const updateAlarms = () => {
+      const now = new Date().getTime();
+      let alarmList = JSON.parse(localStorage.getItem('alarms') || '[]');
+
+      alarms.value = alarmList.map((alarm: any) => {
+        const timeRemaining = Math.max(0, (alarm.alarmTime - now) / 1000);
+        return {
+          ...alarm,
+          timeRemaining,
+          formattedTime: formatTimeRemaining(timeRemaining),
+        };
+      });
+
+      // 檢查是否有鬧鐘到達時間，響起鬧鐘
+      alarms.value.forEach((alarm) => {
+        if (alarm.timeRemaining <= 0) {
+          alert(`鬧鐘 ${alarm.title} 響起！`);
+          // 移除已響起的鬧鐘
+          removeAlarm(alarm.title);
+        }
+      });
     };
+
+
+    // 從 localStorage 移除已響起的鬧鐘
+    const removeAlarm = (title: string) => {
+      let alarmList = JSON.parse(localStorage.getItem('alarms') || '[]');
+      // 過濾掉與給定 title 相匹配的鬧鐘
+      const updatedAlarmList = alarmList.filter((alarm: any) => alarm.title !== title);
+      // 將更新後的鬧鐘列表存回 localStorage
+      localStorage.setItem('alarms', JSON.stringify(updatedAlarmList));
+
+      // 提示已移除
+      alert(`鬧鐘 ${title} 已被移除`);
+    };
+
 
     const toggleSidebar = () => {
       showSidebar.value = !showSidebar.value;
@@ -200,9 +201,9 @@ export default defineComponent({
     };
 
     // 更新彈出框設置鬧鐘的邏輯
-    const setAlarmInPopup = (minutes: number, arrivalTime: number, popup: mapboxgl.Popup) => {
+    const setAlarmInPopup = (minutes: number, arrivalTime: number, title: string, popup: mapboxgl.Popup) => {
       if (minutes > 0 && arrivalTime) {
-        setAlarm(minutes, arrivalTime); // 使用 setAlarm 來設定鬧鐘
+        setAlarm(minutes, arrivalTime, title); // 使用 setAlarm 來設定鬧鐘
         popup.remove(); // 關閉彈出框
       } else {
         alert('請輸入有效的分鐘數和到達時間');
@@ -552,7 +553,8 @@ export default defineComponent({
                         (document.getElementById('minutes') as HTMLInputElement).value
                       );
                       const arrivalTime = clickedFeature.properties['抵達時間'];
-                      setAlarmInPopup(minutes, arrivalTime, popup);
+                      console.log(arrivalTime)
+                      setAlarmInPopup(minutes, arrivalTime, title, popup);
                     });
                   } else {
                     // 其他圖層只顯示 title
@@ -686,6 +688,7 @@ export default defineComponent({
           });
         }
       });
+      setInterval(updateAlarms, 1000);
     });
 
     return {
@@ -695,6 +698,7 @@ export default defineComponent({
       toggleNavigation,
       setAlarm,
       alarms,
+      updateAlarms,
       removeAlarm,
       showSidebar,
       toggleSidebar,
@@ -770,7 +774,8 @@ export default defineComponent({
 .slide-enter,
 .slide-leave-to
 
-/* .slide-leave-active in <2.1.8 */ {
+/* .slide-leave-active in <2.1.8 */
+  {
   transform: translateX(100%);
 }
 
