@@ -226,7 +226,7 @@ export default {
 }
 
 .switch input:checked + .slider {
-  background-color: #5c78d4;
+  background-color: #22474E;
 }
 
 .switch input:focus + .slider {
@@ -246,7 +246,7 @@ export default {
   left: -7%;
   right: 0;
   bottom: 0;
-  background-color: #5cbdcc;
+  background-color: #5AB4C5;
   transition: all 0.4s;
   border-radius: 30px;
   height: 3.5rem;
@@ -267,7 +267,7 @@ export default {
 }
 
 .switch .slider .ball {
-  background-color: rgb(153, 153, 183);
+  background-color: #F1F3F4;
   height: 40px;
   width: 40px;
   border-radius: 50%;
