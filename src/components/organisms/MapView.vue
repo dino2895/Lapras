@@ -128,19 +128,19 @@ export default defineComponent({
         const hours = Math.floor(arrivalTime / 100);
         const minutesOfArrival = arrivalTime % 100;
         const now = new Date();
-        const arrivalDate = new Date(
+        const alarmDate = new Date(
           now.getFullYear(),
           now.getMonth(),
           now.getDate(),
           hours,
-          minutesOfArrival
+          minutesOfArrival-minutes
         );
-        console.log(arrivalDate.getHours(), "     ",arrivalDate.getMinutes(), "     ")
+        console.log(minutes)
         const alarm = {
           minutes,
           title,
-          arrivalTime: arrivalDate.getTime(), // 保存鬧鐘抵達時間（UNIX時間戳）
-          arrivalTimeFormatted: arrivalDate.getHours() +  "：" + arrivalDate.getMinutes()
+          alarmTime: alarmDate.getTime(), // 保存鬧鐘抵達時間（UNIX時間戳）
+          arrivalTimeFormatted: hours +  "：" + minutesOfArrival
         };
 
         // 保存至 localStorage
@@ -160,7 +160,7 @@ export default defineComponent({
       let alarmList = JSON.parse(localStorage.getItem('alarms') || '[]');
 
       alarms.value = alarmList.map((alarm: any) => {
-        const timeRemaining = Math.max(0, (alarm.arrivalTime - now) / 1000);
+        const timeRemaining = Math.max(0, (alarm.alarmTime - now) / 1000);
         return {
           ...alarm,
           timeRemaining,
