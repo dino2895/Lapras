@@ -150,7 +150,8 @@ export default {
 }
 
 .custom-button {
-  width: 100%;
+  width: 70%;
+  margin: auto;
   padding: 0.75rem;
   border-radius: 0.375rem;
   margin-bottom: 0.5rem;

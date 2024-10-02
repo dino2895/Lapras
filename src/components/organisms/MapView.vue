@@ -2,15 +2,9 @@
   <div class="relative w-full h-screen">
     <div id="map" class="w-full h-full"></div>
     <MenuButtons @toggle-menu="toggleMenu" @reset-center="resetCenter" />
-    <MenuContent
-      v-model:showMenu="showMenu"
-      :mapInstance="mapInstance"
-      @toggle-layer-visibility="toggleLayerVisibility"
-      @toggle-all-trashcar-layers-visibility="toggleAllTrashcarLayersVisibility"
-      @reset-center="resetCenter"
-      @toggle-navigation="toggleNavigation"
-      @toggle-sidebar="toggleSidebar"
-    />
+    <MenuContent v-model:showMenu="showMenu" :mapInstance="mapInstance" @toggle-layer-visibility="toggleLayerVisibility"
+      @toggle-all-trashcar-layers-visibility="toggleAllTrashcarLayersVisibility" @reset-center="resetCenter"
+      @toggle-navigation="toggleNavigation" @toggle-sidebar="toggleSidebar" />
     <Sidebar v-show="showSidebar" :show-sidebar="showSidebar" :alarms="alarms" @toggle-sidebar="toggleSidebar"
       @remove-alarm="removeAlarm" />
   </div>
@@ -463,29 +457,27 @@ export default defineComponent({
         const clickedFeature = features[0];
         destinationCoords.value = clickedFeature.geometry.coordinates;
 
-        // 啟動導航
-        if (features.length > 0) {
-          const clickedFeature = features[0];
-          destinationCoords.value = clickedFeature.geometry.coordinates;
-
-          // 獲取使用者位置並導航
-          if (navigationEnabled.value && navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              (position) => {
-                const userCoords: [number, number] = [
-                  position.coords.longitude,
-                  position.coords.latitude
-                ];
-                navigateToCircleLayer(userCoords);
-              },
-              (error) => {
-                console.error('Error getting user location:', error);
-              }
-            );
-          }
+        // 獲取使用者位置並導航
+        if (navigationEnabled.value && navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const userCoords: [number, number] = [
+                position.coords.longitude,
+                position.coords.latitude
+              ];
+              navigateToCircleLayer(userCoords);
+            },
+            (error) => {
+              console.error('Error getting user location:', error);
+            }
+          );
         }
+      } else {
+        // 如果點擊非圓圈區域，彈出提示訊息
+        sendNotification('請點選想去的站點');
       }
     };
+
 
     onMounted(() => {
       mapboxgl.accessToken =
@@ -797,12 +789,17 @@ export default defineComponent({
 }
 
 .mapboxgl-ctrl-directions {
-  max-width: 12rem;
   width: 100%;
-  padding: 0.75rem;
-  background-color: white;
   border-radius: 0.375rem;
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+  min-width: 0;
+  padding-left: 0px;
+}
+
+.mapbox-directions-profile input[type=radio]:checked+label:hover,
+.mapbox-directions-profile input[type=radio]:checked+label {
+  width: 59.5px;
+  color: rgba(0, 0, 0, .75);
 }
 
 .mapboxgl-ctrl-directions .mapbox-directions-origin,
@@ -811,23 +808,48 @@ export default defineComponent({
   background-color: #f7fafc;
   border-radius: 0.375rem;
   font-size: 0.75rem;
-  padding: 0.4rem;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.mapboxgl-ctrl-directions .directions-control-directions {
+  max-height: 150px !important;
+  max-width: 80%;
+  overflow-y: auto;
 }
 
 .mapboxgl-ctrl-directions .directions-icon-reverse {
   display: none !important;
 }
 
-.mapboxgl-ctrl-directions .mapbox-directions-profile {
-  display: flex !important;
-  pointer-events: auto;
-  background-color: #ebf8ff;
-  color: #3182ce;
-  font-weight: 600;
-  padding: 0.4rem 0.75rem;
-  border-radius: 0.25rem;
+.mapboxgl-ctrl-top-left .mapboxgl-ctrl {
+  float: left;
+  margin: 0;
 }
+
+.mapboxgl-ctrl-directions .mapbox-directions-profile {
+  z-index: 10;
+  display: flex !important;
+  align-items: flex-start;
+  pointer-events: auto;
+  background: linear-gradient(135deg, #ebf8ff 0%, #cfe0ff 100%); /* 背景漸變效果 */
+  color: #2a4365; /* 調整文字顏色更和諧 */
+  font-weight: 600;
+  border: 1px solid #3182ce;
+  padding: 0.5rem 0.25rem;
+  border-radius: 8px; /* 更圓潤的邊角 */
+  white-space: nowrap;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加柔和的陰影效果 */
+  max-width: 230px;
+  min-width: 0;
+  margin: 10px 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* 增加平滑的過渡效果 */
+}
+
+.mapboxgl-ctrl-directions .mapbox-directions-profile:hover {
+  transform: translateY(-2px); /* 提升效果 */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* 增強陰影 */
+}
+
 
 .mapboxgl-ctrl-directions .mapbox-directions-route-summary {
   background-color: #cfe0ff;

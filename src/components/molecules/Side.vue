@@ -6,7 +6,7 @@
     >
       <button
         @click="$emit('toggle-sidebar')"
-        class="absolute top-4 right-4 text-gray-600 hover:text-gray-800 transition-colors duration-300"
+        class="absolute top-4 right-[0.5rem] text-gray-600 hover:text-gray-800 transition-colors duration-300"
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
