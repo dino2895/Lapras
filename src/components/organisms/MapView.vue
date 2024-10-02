@@ -429,28 +429,15 @@ export default defineComponent({
       }
     };
 
-    const navigateToCircleLayer = () => {
+    const navigateToCircleLayer = (userCoords: [number, number]) => {
       if (
         mapInstance.value &&
         destinationCoords.value &&
         navigationEnabled.value &&
         directionsControl.value
       ) {
-        // 設置導航起點和終點
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const userCoords: [number, number] = [
-              position.coords.longitude,
-              position.coords.latitude
-            ];
-
-            directionsControl.value!.setOrigin(userCoords); // 設置起點為當前位置
-            directionsControl.value!.setDestination(destinationCoords.value); // 設置終點為點擊的圓圈層位置
-          },
-          (error) => {
-            console.error('Error getting user location:', error);
-          }
-        );
+        directionsControl.value!.setOrigin(userCoords); // 設置起點為當前位置
+        directionsControl.value!.setDestination(destinationCoords.value); // 設置終點為點擊的圓圈層位置
       }
     };
 
@@ -477,8 +464,25 @@ export default defineComponent({
         destinationCoords.value = clickedFeature.geometry.coordinates;
 
         // 啟動導航
-        if (navigationEnabled.value) {
-          navigateToCircleLayer();
+        if (features.length > 0) {
+          const clickedFeature = features[0];
+          destinationCoords.value = clickedFeature.geometry.coordinates;
+
+          // 獲取使用者位置並導航
+          if (navigationEnabled.value && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const userCoords: [number, number] = [
+                  position.coords.longitude,
+                  position.coords.latitude
+                ];
+                navigateToCircleLayer(userCoords);
+              },
+              (error) => {
+                console.error('Error getting user location:', error);
+              }
+            );
+          }
         }
       }
     };
