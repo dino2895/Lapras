@@ -1,93 +1,14 @@
 <template>
-  <div class="w-full h-screen" id="map"></div>
-
-  <!-- 垂直靠右排列的按鈕 -->
-  <div class="absolute top-4 right-4 z-10 flex flex-col space-y-4">
-    <button @click="toggleMenu"
-      class="w-20 custom-blue text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
-      選單
-    </button>
-    <button @click="resetCenter"
-      class="bg-white text-white w-12 h-12 rounded-full shadow-lg hover: custom-gray transition-all duration-300 ml-auto"
-      style="display: block">
-      <img src="@/assets/images/gps.png" class="w-6 h-6 mx-auto" />
-    </button>
+  <div class="relative w-full h-screen">
+    <div id="map" class="w-full h-full"></div>
+    <MenuButtons @toggle-menu="toggleMenu" @reset-center="resetCenter" />
+    <MenuContent v-model:showMenu="showMenu" :mapInstance="mapInstance" @toggle-layer-visibility="toggleLayerVisibility"
+      @toggle-all-trashcar-layers-visibility="toggleAllTrashcarLayersVisibility" @reset-center="resetCenter"
+      @toggle-navigation="toggleNavigation" @toggle-sidebar="toggleSidebar" />
+    <Sidebar v-show="showSidebar" :show-sidebar="showSidebar" :alarms="alarms" @toggle-sidebar="toggleSidebar"
+      @remove-alarm="removeAlarm" />
   </div>
-
-  <transition name="slide">
-    <div v-show="showMenu"
-      class="absolute top-16 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg z-20 p-6 w-80 text-center">
-      <button @click="toggleMenu" class="style1">
-        <img src="@/assets/images/cancel-icon.svg" />
-      </button>
-      <h3 class="text-lg font-bold mb-4">選單</h3>
-
-      <div class="list-container">
-        <p style="padding: 5px;">點擊想要顯示的圖示</p>
-        <button @click="toggleLayerVisibility('dogpoo'); toggleMenu()"
-          class="custom-dog text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transition-all duration-300">
-          狗便清潔箱
-        </button>
-        <button @click="toggleLayerVisibility('cleanbox'); toggleMenu()"
-          class="custom-blue text-white w-full py-3 rounded-full mb-4 shadow hover:bg-blue-300 transition-all duration-300">
-          行人專用清潔箱
-        </button>
-        <button @click="toggleAllTrashcarLayersVisibility(); toggleMenu()"
-          class="custom-car text-white w-full py-3 rounded-full shadow hover:bg-blue-300 transition-all duration-300">
-          垃圾車站點
-        </button>
-      </div>
-      <div class="list-other-container">
-        <button @click="resetCenter(); toggleMenu()"
-          class="custom-heavygray text-white px-6 py-3 w-full rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
-          回到目前定位
-        </button>
-        <button @click="toggleNavigation(); toggleMenu()"
-          class="custom-heavygray text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
-          導航模式
-        </button>
-        <button @click="toggleSidebar(); toggleMenu()"
-          class="custom-heavygray text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-300 transition-all duration-300">
-          鬧鐘列表
-        </button>
-      </div>
-    </div>
-  </transition>
-
-  <!-- 側邊欄 -->
-  <transition name="slide">
-    <div v-show="showSidebar"
-      class="fixed top-0 right-0 bottom-0 bg-white w-96 p-8 shadow-lg z-20 transition-transform transform translate-x-0">
-      <button @click="toggleSidebar"
-        class="absolute top-4 right-4 text-gray-600 hover:text-gray-800 transition-colors duration-300">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
-      <h2 class="text-lg font-bold mb-6 pl-8">鬧鐘列表</h2>
-      <div v-if="alarms.length === 0" class="text-center text-gray-500">
-        尚未有已設定的鬧鐘
-      </div>
-      <ul v-else class="space-y-4">
-        <li v-for="(alarm, index) in alarms" :key="index" class="flex flex-col p-6 bg-gray-100 rounded-lg shadow-sm">
-          <div class="flex flex-col space-y-2 text-gray-700">
-            <span class="text-base">抵達時間：{{ alarm.arrivalTime }}</span>
-            <span class="text-base">提前 {{ alarm.minutes }} 分鐘響</span>
-            <span class="text-base">{{ formatTimeRemaining(alarm.timeRemaining) }}</span>
-          </div>
-          <button @click="removeAlarm(index)"
-            class="mt-4 text-red-500 hover:text-red-600 transition-colors duration-300">
-            刪除
-          </button>
-        </li>
-      </ul>
-    </div>
-  </transition>
-
-
-
 </template>
-
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
@@ -97,10 +18,17 @@ import MapboxLanguage from '@mapbox/mapbox-gl-language';
 import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
 import imagePath from '@/assets/images/geo-point.png';
-
+import MenuButtons from '../molecules/MenuButtons.vue';
+import MenuContent from '../molecules/MenuContent.vue';
+import Sidebar from '../molecules/Side.vue';
 
 export default defineComponent({
   name: 'MapView',
+  components: {
+    MenuButtons,
+    MenuContent,
+    Sidebar
+  },
   setup() {
     const mapInstance = ref<mapboxgl.Map | null>(null);
     const directionsControl = ref<MapboxDirections | null>(null);
@@ -108,6 +36,75 @@ export default defineComponent({
     const destinationCoords = ref<[number, number] | null>(null);
     const showSidebar = ref(false); // 控制側邊欄顯示
     const showMenu = ref(false); // 控制選單顯示
+
+    const sendNotification = (message) => {
+      // 檢查瀏覽器是否支援 Notification API
+      if (!("Notification" in window)) {
+        showNotification(message); // 使用UI通知
+        return;
+      }
+
+      // 檢查 Notification 權限狀態
+      if (Notification.permission === "granted") {
+        // 如果權限已獲得，顯示系統通知並顯示UI通知
+        new Notification(message);
+        showNotification(message);
+      } else if (Notification.permission !== "denied") {
+        // 如果權限未決定，請求通知權限
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            new Notification(message);
+          }
+          showNotification(message); // 即使權限未決定，仍然顯示UI通知
+        });
+      } else {
+        // 如果權限被拒絕，只顯示UI通知
+        showNotification(message);
+      }
+    };
+
+    const showNotification = (message) => {
+      // 找到或創建一個用於顯示通知的元素
+      const notificationElement = document.createElement('div');
+      notificationElement.className = 'notification';
+      notificationElement.textContent = message;
+
+      notificationElement.style.position = 'fixed';
+      notificationElement.style.bottom = '20px';
+      notificationElement.style.left = '50%';  // 將通知居中顯示
+      notificationElement.style.transform = 'translateX(-50%)';  // 水平居中的平移
+      notificationElement.style.backgroundColor = '#2a4365';  // 深藍色背景，提升視覺對比度
+      notificationElement.style.color = '#ffffff';  // 純白色文字，確保清晰可讀
+      notificationElement.style.padding = '14px 20px';  // 調整 padding 讓內容更舒適
+      notificationElement.style.borderRadius = '8px';  // 圓角處理，增加柔和感
+      notificationElement.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';  // 增強陰影效果
+      notificationElement.style.zIndex = '1000';
+      notificationElement.style.fontFamily = 'Arial, sans-serif';
+      notificationElement.style.fontSize = '16px';  // 增加字體大小，適合手機顯示
+      notificationElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      notificationElement.style.opacity = '0.95';  // 增加透明度，讓背景更柔和
+
+      // 針對移動設備的最大寬度設定
+      notificationElement.style.maxWidth = '90%';  // 限制寬度，避免在手機屏幕上過大
+      notificationElement.style.width = 'auto';  // 自動調整寬度以適應內容
+
+      // 進場動畫效果
+      setTimeout(() => {
+        notificationElement.style.opacity = '1';  // 漸變顯示
+        notificationElement.style.transform = 'translateX(-50%) translateY(0)';  // 居中位置並顯示
+      }, 10);
+
+
+
+      // 將通知元素加入到文件中
+      document.body.appendChild(notificationElement);
+
+      // 設定一段時間後自動消失
+      setTimeout(() => {
+        notificationElement.remove();
+      }, 3000); // 3秒後消失
+    };
+
 
     // 圖層可見性狀態
     const layersVisibility = ref({
@@ -135,12 +132,6 @@ export default defineComponent({
         }
       });
 
-      // 根據新的可見性狀態顯示提示信息
-      if (isVisible) {
-        alert('垃圾車站點 顯示');
-      } else {
-        alert('垃圾車站點 隱藏');
-      }
     };
 
     // 切換圖層可見性
@@ -158,9 +149,9 @@ export default defineComponent({
 
           // 根據圖層可見性顯示對應的 alert
           if (!visibility) {
-            alert(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 顯示`);
+            sendNotification(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 顯示`);
           } else {
-            alert(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 隱藏`);
+            sendNotification(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 隱藏`);
           }
         } else {
           console.error(`Layer ${layerId} does not exist.`);
@@ -170,19 +161,19 @@ export default defineComponent({
       }
     };
 
-
     // 鬧鐘相關狀態
-    const alarms = ref<{ minutes: number, arrivalTime: string, timeRemaining: number, interval: NodeJS.Timeout }[]>([]);
+    const alarms = ref<
+      { minutes: number; arrivalTime: string; timeRemaining: number; interval: NodeJS.Timeout; title: string }[]
+    >([]);
 
+
+    // 格式化剩餘時間
     function formatTimeRemaining(seconds: number): string {
       if (seconds <= 0) return '即將響';
 
-      // 四捨五入秒數
-      const roundedSeconds = Math.round(seconds);
-
-      const hours = Math.floor(roundedSeconds / 3600);
-      const minutes = Math.floor((roundedSeconds % 3600) / 60);
-      const secs = roundedSeconds % 60;
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
 
       let timeString = '';
       if (hours > 0) timeString += `${hours} 小時 `;
@@ -192,58 +183,75 @@ export default defineComponent({
       return timeString.trim() + '後響';
     }
 
-
-    const setAlarm = (minutes: number, arrivalTime: number) => {
-      if (minutes > 0) {
+    // 設定鬧鐘並保存至 localStorage
+    const setAlarm = (minutes: number, arrivalTime: number, title: string) => {
+      if (minutes > 0 && arrivalTime) {
         const hours = Math.floor(arrivalTime / 100);
         const minutesOfArrival = arrivalTime % 100;
-
         const now = new Date();
-        const arrivalDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutesOfArrival);
-        const alarmTime = new Date(arrivalDate.getTime() - minutes * 60000);
+        const alarmDate = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+          hours,
+          minutesOfArrival - minutes
+        );
+        console.log(minutes)
+        const alarm = {
+          minutes,
+          title,
+          alarmTime: alarmDate.getTime(), // 保存鬧鐘抵達時間（UNIX時間戳）
+          arrivalTimeFormatted: hours + "：" + minutesOfArrival
+        };
 
-        console.log("alarmTime", alarmTime)
-        console.log("now", now)
+        // 保存至 localStorage
+        let alarmList = JSON.parse(localStorage.getItem('alarms') || '[]');
+        alarmList.push(alarm);
+        localStorage.setItem('alarms', JSON.stringify(alarmList));
 
-
-        if (alarmTime > now) {
-          const timeUntilAlarm = (alarmTime.getTime() - now.getTime()) / 1000;
-          const hours = Math.floor(arrivalTime / 100); // 取整數部分為小時
-          const minutesA = arrivalTime % 100; // 取餘數部分為分鐘
-          // 格式化為 'HH:MM'
-          const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutesA).padStart(2, '0')}`;
-
-          const alarm = {
-            minutes: minutes,
-            arrivalTime: formattedTime,
-            timeRemaining: timeUntilAlarm,
-            interval: setInterval(() => {
-              alarm.timeRemaining -= 1;
-              alarms.value = [...alarms.value];
-              if (alarm.timeRemaining <= 0) {
-                clearInterval(alarm.interval);
-                alert('鬧鐘時間到！');
-              }
-            }, 1000),
-          };
-
-          alarms.value.push(alarm); // 推送鬧鐘資料
-          console.log("alarm", alarm)
-          alarms.value = [...alarms.value]; // 強制更新 Vue 視圖
-
-          alert(`鬧鐘已設定，將在 ${minutes} 分鐘前提醒你`);
-        } else {
-          alert('鬧鐘時間無效，請設定一個未來的時間');
-        }
+        sendNotification(`鬧鐘已設定，將在 ${minutes} 分鐘後提醒你`);
       } else {
-        alert('請輸入有效的分鐘數和到達時間');
+        sendNotification('請輸入有效的時間');
       }
     };
 
-    const removeAlarm = (index: number) => {
-      clearInterval(alarms.value[index].interval);
-      alarms.value.splice(index, 1);
+    // 每秒更新鬧鐘剩餘時間
+    const updateAlarms = () => {
+      const now = new Date().getTime();
+      let alarmList = JSON.parse(localStorage.getItem('alarms') || '[]');
+
+      alarms.value = alarmList.map((alarm: any) => {
+        const timeRemaining = Math.max(0, (alarm.alarmTime - now) / 1000);
+        return {
+          ...alarm,
+          timeRemaining,
+          formattedTime: formatTimeRemaining(timeRemaining),
+        };
+      });
+
+      // 檢查是否有鬧鐘到達時間，響起鬧鐘
+      alarms.value.forEach((alarm) => {
+        if (alarm.timeRemaining <= 0) {
+          sendNotification(`鬧鐘 ${alarm.title} 響起！`);
+          // 移除已響起的鬧鐘
+          removeAlarm(alarm.title);
+        }
+      });
     };
+
+
+    // 從 localStorage 移除已響起的鬧鐘
+    const removeAlarm = (title: string) => {
+      let alarmList = JSON.parse(localStorage.getItem('alarms') || '[]');
+      // 過濾掉與給定 title 相匹配的鬧鐘
+      const updatedAlarmList = alarmList.filter((alarm: any) => alarm.title !== title);
+      // 將更新後的鬧鐘列表存回 localStorage
+      localStorage.setItem('alarms', JSON.stringify(updatedAlarmList));
+
+      // 提示已移除
+      sendNotification(`鬧鐘 ${title} 已被移除`);
+    };
+
 
     const toggleSidebar = () => {
       showSidebar.value = !showSidebar.value;
@@ -254,16 +262,14 @@ export default defineComponent({
     };
 
     // 更新彈出框設置鬧鐘的邏輯
-    const setAlarmInPopup = (minutes: number, arrivalTime: number, popup: mapboxgl.Popup) => {
+    const setAlarmInPopup = (minutes: number, arrivalTime: number, title: string, popup: mapboxgl.Popup) => {
       if (minutes > 0 && arrivalTime) {
-        setAlarm(minutes, arrivalTime); // 使用 setAlarm 來設定鬧鐘
+        setAlarm(minutes, arrivalTime, title); // 使用 setAlarm 來設定鬧鐘
         popup.remove(); // 關閉彈出框
       } else {
-        alert('請輸入有效的分鐘數和到達時間');
+        sendNotification('請輸入有效的分鐘數和到達時間');
       }
     };
-
-
 
     // 繪製路徑的函數
     const drawRouteWithTrashcarData = async (layerName) => {
@@ -385,20 +391,6 @@ export default defineComponent({
         console.error('pointsJSON features array is empty or undefined.');
       }
     };
-
-    //地圖假資料
-    // const generateRandomCoords = (): [number, number] => {
-    //     const baseLongitude = 121.540592;
-    //     const baseLatitude = 25.056111;
-
-    //     const randomOffset = () => (Math.random() - 0.5) * 0.001; // 隨機產生微小變化
-    //     const newLongitude = baseLongitude + randomOffset();
-    //     const newLatitude = baseLatitude + randomOffset();
-
-    //     return [newLongitude, newLatitude];
-    // };
-
-    //設中心點
     const resetCenter = () => {
       if (mapInstance.value && pointsJSON.value.features[0].geometry.coordinates) {
         mapInstance.value.setCenter(pointsJSON.value.features[0].geometry.coordinates);
@@ -412,13 +404,13 @@ export default defineComponent({
     const toggleNavigation = () => {
       if (navigationEnabled.value && directionsControl.value) {
         // 停用導航
-        alert('關閉導航');
+        sendNotification('關閉導航');
         mapInstance.value?.removeControl(directionsControl.value);
         navigationEnabled.value = false;
         resetCenter();
       } else {
         // 啟用導航
-        alert('啟用導航');
+        sendNotification('啟用導航');
         if (!mapInstance.value) return;
 
         directionsControl.value = new MapboxDirections({
@@ -431,28 +423,15 @@ export default defineComponent({
       }
     };
 
-    const navigateToCircleLayer = () => {
+    const navigateToCircleLayer = (userCoords: [number, number]) => {
       if (
         mapInstance.value &&
         destinationCoords.value &&
         navigationEnabled.value &&
         directionsControl.value
       ) {
-        // 設置導航起點和終點
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const userCoords: [number, number] = [
-              position.coords.longitude,
-              position.coords.latitude
-            ];
-
-            directionsControl.value!.setOrigin(userCoords); // 設置起點為當前位置
-            directionsControl.value!.setDestination(destinationCoords.value); // 設置終點為點擊的圓圈層位置
-          },
-          (error) => {
-            console.error('Error getting user location:', error);
-          }
-        );
+        directionsControl.value!.setOrigin(userCoords); // 設置起點為當前位置
+        directionsControl.value!.setDestination(destinationCoords.value); // 設置終點為點擊的圓圈層位置
       }
     };
 
@@ -478,12 +457,27 @@ export default defineComponent({
         const clickedFeature = features[0];
         destinationCoords.value = clickedFeature.geometry.coordinates;
 
-        // 啟動導航
-        if (navigationEnabled.value) {
-          navigateToCircleLayer();
+        // 獲取使用者位置並導航
+        if (navigationEnabled.value && navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const userCoords: [number, number] = [
+                position.coords.longitude,
+                position.coords.latitude
+              ];
+              navigateToCircleLayer(userCoords);
+            },
+            (error) => {
+              console.error('Error getting user location:', error);
+            }
+          );
         }
+      } else {
+        // 如果點擊非圓圈區域，彈出提示訊息
+        sendNotification('請點選想去的站點');
       }
     };
+
 
     onMounted(() => {
       mapboxgl.accessToken =
@@ -580,9 +574,10 @@ export default defineComponent({
 
               if (features.length) {
                 const clickedFeature = features[0];
-                const coordinates = clickedFeature.geometry?.type === 'Point'
-                  ? clickedFeature.geometry.coordinates
-                  : null;
+                const coordinates =
+                  clickedFeature.geometry?.type === 'Point'
+                    ? clickedFeature.geometry.coordinates
+                    : null;
 
                 const titleKey = Object.keys(clickedFeature.properties).find(
                   (key) => key.trim() === 'title'
@@ -601,7 +596,8 @@ export default defineComponent({
 
                     const popup = new mapboxgl.Popup()
                       .setLngLat([event.lngLat.lng, event.lngLat.lat])
-                      .setHTML(`
+                      .setHTML(
+                        `
             <div class="p-4 bg-white rounded-lg shadow-lg">
               <h5 class="text-sm font-semibold mb-2 text-gray-800">地點：</br>${title}</h5>
               <p class="text-sm font-semibold mb-2 text-gray-800">垃圾車抵達時間${formattedTime}</p>
@@ -611,30 +607,34 @@ export default defineComponent({
               </div>
               <button id="setAlarm" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">設定鬧鐘</button>
             </div>
-          `)
+          `
+                      )
                       .addTo(mapInstance.value!);
 
                     document.getElementById('setAlarm')?.addEventListener('click', () => {
-                      const minutes = parseInt((document.getElementById('minutes') as HTMLInputElement).value);
+                      const minutes = parseInt(
+                        (document.getElementById('minutes') as HTMLInputElement).value
+                      );
                       const arrivalTime = clickedFeature.properties['抵達時間'];
-                      setAlarmInPopup(minutes, arrivalTime, popup);
+                      console.log(arrivalTime)
+                      setAlarmInPopup(minutes, arrivalTime, title, popup);
                     });
-
                   } else {
                     // 其他圖層只顯示 title
                     new mapboxgl.Popup()
                       .setLngLat([event.lngLat.lng, event.lngLat.lat])
-                      .setHTML(`
+                      .setHTML(
+                        `
             <div class="p-4 bg-white rounded-lg shadow-lg">
               <h5 class="text-sm font-semibold mb-2 text-gray-800">地點：</br>${title}</h5>
             </div>
-          `)
+          `
+                      )
                       .addTo(mapInstance.value!);
                   }
                 }
               }
             });
-
 
             mapInstance.value!.on('mousemove', (event) => {
               const features = mapInstance.value!.queryRenderedFeatures(event.point, {
@@ -751,6 +751,7 @@ export default defineComponent({
           });
         }
       });
+      setInterval(updateAlarms, 1000);
     });
 
     return {
@@ -760,6 +761,7 @@ export default defineComponent({
       toggleNavigation,
       setAlarm,
       alarms,
+      updateAlarms,
       removeAlarm,
       showSidebar,
       toggleSidebar,
@@ -787,12 +789,17 @@ export default defineComponent({
 }
 
 .mapboxgl-ctrl-directions {
-  max-width: 12rem;
   width: 100%;
-  padding: 0.75rem;
-  background-color: white;
   border-radius: 0.375rem;
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+  min-width: 0;
+  padding-left: 0px;
+}
+
+.mapbox-directions-profile input[type=radio]:checked+label:hover,
+.mapbox-directions-profile input[type=radio]:checked+label {
+  width: 59.5px;
+  color: rgba(0, 0, 0, .75);
 }
 
 .mapboxgl-ctrl-directions .mapbox-directions-origin,
@@ -801,23 +808,48 @@ export default defineComponent({
   background-color: #f7fafc;
   border-radius: 0.375rem;
   font-size: 0.75rem;
-  padding: 0.4rem;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.mapboxgl-ctrl-directions .directions-control-directions {
+  max-height: 150px !important;
+  max-width: 80%;
+  overflow-y: auto;
 }
 
 .mapboxgl-ctrl-directions .directions-icon-reverse {
   display: none !important;
 }
 
-.mapboxgl-ctrl-directions .mapbox-directions-profile {
-  display: flex !important;
-  pointer-events: auto;
-  background-color: #ebf8ff;
-  color: #3182ce;
-  font-weight: 600;
-  padding: 0.4rem 0.75rem;
-  border-radius: 0.25rem;
+.mapboxgl-ctrl-top-left .mapboxgl-ctrl {
+  float: left;
+  margin: 0;
 }
+
+.mapboxgl-ctrl-directions .mapbox-directions-profile {
+  z-index: 10;
+  display: flex !important;
+  align-items: flex-start;
+  pointer-events: auto;
+  background: linear-gradient(135deg, #ebf8ff 0%, #cfe0ff 100%); /* 背景漸變效果 */
+  color: #2a4365; /* 調整文字顏色更和諧 */
+  font-weight: 600;
+  border: 1px solid #3182ce;
+  padding: 0.5rem 0.25rem;
+  border-radius: 8px; /* 更圓潤的邊角 */
+  white-space: nowrap;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加柔和的陰影效果 */
+  max-width: 230px;
+  min-width: 0;
+  margin: 10px 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* 增加平滑的過渡效果 */
+}
+
+.mapboxgl-ctrl-directions .mapbox-directions-profile:hover {
+  transform: translateY(-2px); /* 提升效果 */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* 增強陰影 */
+}
+
 
 .mapboxgl-ctrl-directions .mapbox-directions-route-summary {
   background-color: #cfe0ff;
@@ -829,7 +861,7 @@ export default defineComponent({
 /* Define slide transition */
 .slide-enter-active,
 .slide-leave-active {
-  transition: transform 0.3s ease;
+  transition: transform 0.5s ease-in-out;
 }
 
 .slide-enter,
@@ -870,54 +902,5 @@ export default defineComponent({
 
 .white {
   color: white;
-}
-
-.custom-blue {
-  background-color: #5ab4c5;
-  /* 自定義藍色背景 */
-}
-
-.custom-gray {
-  background-color: #d9d9d9;
-  /* 自定義輝色背景 */
-}
-
-.custom-littleblue {
-  background-color: #0d1719;
-  /* 自定義淺色背景 */
-}
-
-.custom-heavygray {
-  background-color: #1e1d1d62;
-  /* 自定義輝色背景 */
-}
-
-.custom-dog {
-  background-color: #5e6a58;
-  /* 自定義淺色背景 */
-}
-
-.custom-car {
-  background-color: #a77f48;
-  /* 自定義淺色背景 */
-}
-
-.list-container {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  border: solid 5px rgb(132, 196, 230);
-  border-radius: 10px 10px 10px 10px;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-.list-other-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  border: solid 5px rgb(255, 255, 255);
-  border-radius: 10px 10px 10px 10px;
-  padding: 10px;
 }
 </style>
