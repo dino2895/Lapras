@@ -99,11 +99,11 @@ export default {
     },
     toggleLayer(layerId) {
       this.$emit('toggle-layer-visibility', layerId);
-      this.toggleMenu();
+      //this.toggleMenu();
     },
     toggleAllTrashcarLayers() {
       this.$emit('toggle-all-trashcar-layers-visibility');
-      this.toggleMenu();
+      //this.toggleMenu();
     },
     toggleNavigation() {
       this.$emit('toggle-navigation');
