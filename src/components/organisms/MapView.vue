@@ -11,7 +11,6 @@
   </div>
 </template>
 
-
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
 import mapboxgl from 'mapbox-gl';
@@ -39,6 +38,75 @@ export default defineComponent({
     const showSidebar = ref(false); // 控制側邊欄顯示
     const showMenu = ref(false); // 控制選單顯示
 
+    const sendNotification = (message) => {
+      // 檢查瀏覽器是否支援 Notification API
+      if (!("Notification" in window)) {
+        showNotification(message); // 使用UI通知
+        return;
+      }
+
+      // 檢查 Notification 權限狀態
+      if (Notification.permission === "granted") {
+        // 如果權限已獲得，顯示系統通知並顯示UI通知
+        new Notification(message);
+        showNotification(message);
+      } else if (Notification.permission !== "denied") {
+        // 如果權限未決定，請求通知權限
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            new Notification(message);
+          }
+          showNotification(message); // 即使權限未決定，仍然顯示UI通知
+        });
+      } else {
+        // 如果權限被拒絕，只顯示UI通知
+        showNotification(message);
+      }
+    };
+
+    const showNotification = (message) => {
+      // 找到或創建一個用於顯示通知的元素
+      const notificationElement = document.createElement('div');
+      notificationElement.className = 'notification';
+      notificationElement.textContent = message;
+
+      notificationElement.style.position = 'fixed';
+      notificationElement.style.bottom = '20px';
+      notificationElement.style.left = '50%';  // 將通知居中顯示
+      notificationElement.style.transform = 'translateX(-50%)';  // 水平居中的平移
+      notificationElement.style.backgroundColor = '#2a4365';  // 深藍色背景，提升視覺對比度
+      notificationElement.style.color = '#ffffff';  // 純白色文字，確保清晰可讀
+      notificationElement.style.padding = '14px 20px';  // 調整 padding 讓內容更舒適
+      notificationElement.style.borderRadius = '8px';  // 圓角處理，增加柔和感
+      notificationElement.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';  // 增強陰影效果
+      notificationElement.style.zIndex = '1000';
+      notificationElement.style.fontFamily = 'Arial, sans-serif';
+      notificationElement.style.fontSize = '16px';  // 增加字體大小，適合手機顯示
+      notificationElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      notificationElement.style.opacity = '0.95';  // 增加透明度，讓背景更柔和
+
+      // 針對移動設備的最大寬度設定
+      notificationElement.style.maxWidth = '90%';  // 限制寬度，避免在手機屏幕上過大
+      notificationElement.style.width = 'auto';  // 自動調整寬度以適應內容
+
+      // 進場動畫效果
+      setTimeout(() => {
+        notificationElement.style.opacity = '1';  // 漸變顯示
+        notificationElement.style.transform = 'translateX(-50%) translateY(0)';  // 居中位置並顯示
+      }, 10);
+
+
+
+      // 將通知元素加入到文件中
+      document.body.appendChild(notificationElement);
+
+      // 設定一段時間後自動消失
+      setTimeout(() => {
+        notificationElement.remove();
+      }, 3000); // 3秒後消失
+    };
+
+
     // 圖層可見性狀態
     const layersVisibility = ref({
       dogpoo: true,
@@ -65,12 +133,6 @@ export default defineComponent({
         }
       });
 
-      // 根據新的可見性狀態顯示提示信息
-      if (isVisible) {
-        alert('垃圾車站點 顯示');
-      } else {
-        alert('垃圾車站點 隱藏');
-      }
     };
 
     // 切換圖層可見性
@@ -88,9 +150,9 @@ export default defineComponent({
 
           // 根據圖層可見性顯示對應的 alert
           if (!visibility) {
-            alert(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 顯示`);
+            sendNotification(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 顯示`);
           } else {
-            alert(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 隱藏`);
+            sendNotification(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 隱藏`);
           }
         } else {
           console.error(`Layer ${layerId} does not exist.`);
@@ -133,14 +195,14 @@ export default defineComponent({
           now.getMonth(),
           now.getDate(),
           hours,
-          minutesOfArrival-minutes
+          minutesOfArrival - minutes
         );
         console.log(minutes)
         const alarm = {
           minutes,
           title,
           alarmTime: alarmDate.getTime(), // 保存鬧鐘抵達時間（UNIX時間戳）
-          arrivalTimeFormatted: hours +  "：" + minutesOfArrival
+          arrivalTimeFormatted: hours + "：" + minutesOfArrival
         };
 
         // 保存至 localStorage
@@ -148,9 +210,9 @@ export default defineComponent({
         alarmList.push(alarm);
         localStorage.setItem('alarms', JSON.stringify(alarmList));
 
-        alert(`鬧鐘已設定，將在 ${minutes} 分鐘後提醒你`);
+        sendNotification(`鬧鐘已設定，將在 ${minutes} 分鐘後提醒你`);
       } else {
-        alert('請輸入有效的時間');
+        sendNotification('請輸入有效的時間');
       }
     };
 
@@ -171,7 +233,7 @@ export default defineComponent({
       // 檢查是否有鬧鐘到達時間，響起鬧鐘
       alarms.value.forEach((alarm) => {
         if (alarm.timeRemaining <= 0) {
-          alert(`鬧鐘 ${alarm.title} 響起！`);
+          sendNotification(`鬧鐘 ${alarm.title} 響起！`);
           // 移除已響起的鬧鐘
           removeAlarm(alarm.title);
         }
@@ -188,7 +250,7 @@ export default defineComponent({
       localStorage.setItem('alarms', JSON.stringify(updatedAlarmList));
 
       // 提示已移除
-      alert(`鬧鐘 ${title} 已被移除`);
+      sendNotification(`鬧鐘 ${title} 已被移除`);
     };
 
 
@@ -206,7 +268,7 @@ export default defineComponent({
         setAlarm(minutes, arrivalTime, title); // 使用 setAlarm 來設定鬧鐘
         popup.remove(); // 關閉彈出框
       } else {
-        alert('請輸入有效的分鐘數和到達時間');
+        sendNotification('請輸入有效的分鐘數和到達時間');
       }
     };
 
@@ -343,13 +405,13 @@ export default defineComponent({
     const toggleNavigation = () => {
       if (navigationEnabled.value && directionsControl.value) {
         // 停用導航
-        alert('關閉導航');
+        sendNotification('關閉導航');
         mapInstance.value?.removeControl(directionsControl.value);
         navigationEnabled.value = false;
         resetCenter();
       } else {
         // 啟用導航
-        alert('啟用導航');
+        sendNotification('啟用導航');
         if (!mapInstance.value) return;
 
         directionsControl.value = new MapboxDirections({
