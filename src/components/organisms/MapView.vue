@@ -143,15 +143,23 @@ export default defineComponent({
         const newOpacity = visibility ? 0 : 1;
 
         if (mapInstance.value.getLayer(layerId)) {
-          // 只適用circle類型圖層
+          // 只適用於circle類型圖層：改變circle圖層的不透明度
           mapInstance.value.setPaintProperty(layerId, 'circle-opacity', newOpacity);
+
+          // 為0時，將circle-stroke-opacity也設置為0，以隱藏邊緣
+          mapInstance.value.setPaintProperty(layerId, 'circle-stroke-opacity', newOpacity);
+
+          // 設置交互性：當圖層不可見時，禁用交互
+          mapInstance.value.setLayoutProperty(layerId, 'visibility', visibility ? 'none' : 'visible');
+
+          // 更新圖層可見性狀態
           layersVisibility.value[layerId] = !visibility;
 
           // 根據圖層可見性顯示對應的 alert
           if (!visibility) {
-            sendNotification(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 顯示`);
+            showNotification(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 顯示`);
           } else {
-            sendNotification(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 隱藏`);
+            showNotification(`${layerId === 'dogpoo' ? '狗便清潔箱' : '行人專用清潔箱'} 隱藏`);
           }
         } else {
           console.error(`Layer ${layerId} does not exist.`);
@@ -209,9 +217,9 @@ export default defineComponent({
         alarmList.push(alarm);
         localStorage.setItem('alarms', JSON.stringify(alarmList));
 
-        sendNotification(`鬧鐘已設定，將在 ${minutes} 分鐘後提醒你`);
+        showNotification(`鬧鐘已設定，將在 ${minutes} 分鐘後提醒你`);
       } else {
-        sendNotification('請輸入有效的時間');
+        showNotification('請輸入有效的時間');
       }
     };
 
@@ -249,7 +257,7 @@ export default defineComponent({
       localStorage.setItem('alarms', JSON.stringify(updatedAlarmList));
 
       // 提示已移除
-      sendNotification(`鬧鐘 ${title} 已被移除`);
+      showNotification(`鬧鐘 ${title} 已被移除`);
     };
 
 
@@ -267,7 +275,7 @@ export default defineComponent({
         setAlarm(minutes, arrivalTime, title); // 使用 setAlarm 來設定鬧鐘
         popup.remove(); // 關閉彈出框
       } else {
-        sendNotification('請輸入有效的分鐘數和到達時間');
+        showNotification('請輸入有效的分鐘數和到達時間');
       }
     };
 
@@ -404,13 +412,13 @@ export default defineComponent({
     const toggleNavigation = () => {
       if (navigationEnabled.value && directionsControl.value) {
         // 停用導航
-        sendNotification('關閉導航');
+        showNotification('關閉導航');
         mapInstance.value?.removeControl(directionsControl.value);
         navigationEnabled.value = false;
         resetCenter();
       } else {
         // 啟用導航
-        sendNotification('啟用導航');
+        showNotification('啟用導航');
         if (!mapInstance.value) return;
 
         directionsControl.value = new MapboxDirections({
@@ -474,7 +482,7 @@ export default defineComponent({
         }
       } else {
         // 如果點擊非圓圈區域，彈出提示訊息
-        sendNotification('請點選想去的站點');
+        showNotification('請點選想去的站點');
       }
     };
 
@@ -679,22 +687,32 @@ export default defineComponent({
 
             // 假設中心點塗層已存在，更新數據
             // 定時更新使用者位置
-            setInterval(() => {
-              if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                  (position) => {
-                    const coords: [number, number] = [
-                      position.coords.longitude,
-                      position.coords.latitude
-                    ];
-                    updateUserLocation(coords);
-                  },
-                  (error) => {
-                    console.error('Error getting location:', error);
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                // 成功獲取位置，這表示授權已通過
+                setInterval(() => {
+                  if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                      (position) => {
+                        const coords: [number, number] = [
+                          position.coords.longitude,
+                          position.coords.latitude
+                        ];
+                        updateUserLocation(coords);
+                      },
+                      (error) => {
+                        console.error('Error getting location:', error);
+                      }
+                    );
                   }
-                );
+                }, 5000);
+              },
+              (error) => {
+                // 使用者拒絕授權或發生其他錯誤
+                console.error('Error requesting location permission:', error);
               }
-            }, 5000);
+            );
+
 
             mapInstance.value!.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
 
@@ -831,23 +849,30 @@ export default defineComponent({
   display: flex !important;
   align-items: flex-start;
   pointer-events: auto;
-  background: linear-gradient(135deg, #ebf8ff 0%, #cfe0ff 100%); /* 背景漸變效果 */
-  color: #2a4365; /* 調整文字顏色更和諧 */
+  background: linear-gradient(135deg, #ebf8ff 0%, #cfe0ff 100%);
+  /* 背景漸變效果 */
+  color: #2a4365;
+  /* 調整文字顏色更和諧 */
   font-weight: 600;
   border: 1px solid #3182ce;
   padding: 0.5rem 0.25rem;
-  border-radius: 8px; /* 更圓潤的邊角 */
+  border-radius: 8px;
+  /* 更圓潤的邊角 */
   white-space: nowrap;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加柔和的陰影效果 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* 添加柔和的陰影效果 */
   max-width: 230px;
   min-width: 0;
   margin: 10px 0;
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* 增加平滑的過渡效果 */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* 增加平滑的過渡效果 */
 }
 
 .mapboxgl-ctrl-directions .mapbox-directions-profile:hover {
-  transform: translateY(-2px); /* 提升效果 */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* 增強陰影 */
+  transform: translateY(-2px);
+  /* 提升效果 */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  /* 增強陰影 */
 }
 
 
