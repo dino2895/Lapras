@@ -15,14 +15,9 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/trash',
+      path: '/',
       name: 'trash',
       component: Trash
-    },
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView
     },
     {
       path: '/form/:id',
