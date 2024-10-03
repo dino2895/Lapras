@@ -112,6 +112,8 @@ export default defineComponent({
       cleanbox: true
     });
 
+    const TrashCarVisible = ref(true); 
+
     //切換所有圖層
     const toggleAllTrashcarLayersVisibility = () => {
       if (!mapInstance.value) return;
